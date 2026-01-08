@@ -20,7 +20,7 @@ export default function StaffHome() {
       </header>
 
       {/* Digital ID Card */}
-      <motion.div 
+      <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="bg-gradient-to-br from-brand-900 to-brand-800 rounded-[2rem] p-8 text-white shadow-xl shadow-brand-900/20 relative overflow-hidden"
@@ -31,9 +31,9 @@ export default function StaffHome() {
 
         <div className="relative z-10 flex flex-col items-center text-center space-y-6">
           <div className="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full p-1 border-2 border-white/20">
-             <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D" alt="User" className="w-full h-full rounded-full object-cover" />
+            <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D" alt="User" className="w-full h-full rounded-full object-cover" />
           </div>
-          
+
           <div>
             <h2 className="text-2xl font-bold">Alex Johnson</h2>
             {/* Only show ID for Staff */}
@@ -45,7 +45,7 @@ export default function StaffHome() {
           </div>
 
           <div className="bg-white p-4 rounded-2xl shadow-lg">
-             <QrCode size={120} className="text-gray-900" />
+            <QrCode size={120} className="text-gray-900" />
           </div>
 
           <div className="flex items-center gap-2 bg-green-500/20 text-green-100 px-4 py-1.5 rounded-full text-sm font-medium backdrop-blur-md border border-green-500/30">
@@ -62,7 +62,7 @@ export default function StaffHome() {
           <p className="text-lg font-bold text-gray-900">Dec 31, 2025</p>
         </div>
         <div className="bg-white p-5 rounded-2xl shadow-soft">
-          <p className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Zone</p>
+          <p className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Location</p>
           <p className="text-lg font-bold text-gray-900">Level B2</p>
         </div>
       </div>

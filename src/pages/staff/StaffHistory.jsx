@@ -3,10 +3,10 @@ import { ChevronLeft, MapPin, Clock, CreditCard, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const historyData = [
-  { id: 1, date: 'Today, 10:30 AM', location: 'Zone A - Spot 12', duration: '2h 45m', amount: '12.50', method: 'Apple Pay', vehicle: 'Tesla Model 3' },
-  { id: 2, date: 'Yesterday, 08:15 AM', location: 'Zone B - Spot 05', duration: '8h 00m', amount: '24.00', method: 'Credit Card', vehicle: 'Toyota Camry' },
-  { id: 3, date: 'Dec 20, 2024', location: 'Zone A - Spot 08', duration: '1h 30m', amount: '8.50', method: 'Cash', vehicle: 'Tesla Model 3' },
-  { id: 4, date: 'Dec 18, 2024', location: 'Zone C - Spot 01', duration: '45m', amount: '5.00', method: 'Google Pay', vehicle: 'Toyota Camry' },
+  { id: 1, date: 'Today, 10:30 AM', location: 'Area A - Spot 12', duration: '2h 45m', amount: '12.50', method: 'Apple Pay', vehicle: 'Tesla Model 3' },
+  { id: 2, date: 'Yesterday, 08:15 AM', location: 'Area B - Spot 05', duration: '8h 00m', amount: '24.00', method: 'Credit Card', vehicle: 'Toyota Camry' },
+  { id: 3, date: 'Dec 20, 2024', location: 'Area A - Spot 08', duration: '1h 30m', amount: '8.50', method: 'Cash', vehicle: 'Tesla Model 3' },
+  { id: 4, date: 'Dec 18, 2024', location: 'Area C - Spot 01', duration: '45m', amount: '5.00', method: 'Google Pay', vehicle: 'Toyota Camry' },
 ];
 
 export default function StaffHistory() {
@@ -34,7 +34,7 @@ export default function StaffHistory() {
               </div>
               <span className="font-bold text-lg text-gray-900">${item.amount}</span>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-brand-50 flex items-center justify-center text-brand-600">

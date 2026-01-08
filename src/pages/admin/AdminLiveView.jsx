@@ -3,17 +3,17 @@ import { Search, Clock, Car } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 
 const cars = [
-  { id: 1, plate: 'ABC-1234', entry: '08:30 AM', duration: '2h 15m', zone: 'A-12', status: 'active' },
-  { id: 2, plate: 'XYZ-9876', entry: '09:15 AM', duration: '45m', zone: 'B-05', status: 'active' },
-  { id: 3, plate: 'LMN-4567', entry: '05:00 AM', duration: '5h 30m', zone: 'A-08', status: 'overdue' },
-  { id: 4, plate: 'PQR-1122', entry: '10:00 AM', duration: '10m', zone: 'C-01', status: 'active' },
-  { id: 5, plate: 'STU-9988', entry: '09:00 AM', duration: '1h 05m', zone: 'B-11', status: 'active' },
+  { id: 1, plate: 'ABC-1234', entry: '08:30 AM', duration: '2h 15m', location: 'Area A-12', status: 'active' },
+  { id: 2, plate: 'XYZ-9876', entry: '09:15 AM', duration: '45m', location: 'Area B-05', status: 'active' },
+  { id: 3, plate: 'LMN-4567', entry: '05:00 AM', duration: '5h 30m', location: 'Area A-08', status: 'overdue' },
+  { id: 4, plate: 'PQR-1122', entry: '10:00 AM', duration: '10m', location: 'Area C-01', status: 'active' },
+  { id: 5, plate: 'STU-9988', entry: '09:00 AM', duration: '1h 05m', location: 'Area B-11', status: 'active' },
 ];
 
 export default function AdminLiveView() {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredCars = cars.filter(car => 
+  const filteredCars = cars.filter(car =>
     car.plate.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -26,9 +26,9 @@ export default function AdminLiveView() {
 
       <div className="flex gap-3">
         <div className="flex-1">
-          <Input 
-            icon={Search} 
-            placeholder="Search license plate..." 
+          <Input
+            icon={Search}
+            placeholder="Search license plate..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -49,7 +49,7 @@ export default function AdminLiveView() {
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <span>Entry: {car.entry}</span>
                   <span>•</span>
-                  <span className="font-medium text-brand-600">{car.zone}</span>
+                  <span className="font-medium text-brand-600">{car.location}</span>
                 </div>
               </div>
             </div>
