@@ -439,7 +439,6 @@ export default function StaffBooking() {
                 >
                   <div className="text-left">
                     <span className="block text-xl font-bold">Location {loc}</span>
-                    <span className="text-sm font-medium opacity-60">Level {loc === 'A' ? '1' : loc === 'B' ? '2' : '3'}</span>
                   </div>
                   <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors ${bookingData.location === loc ? 'border-brand-500 bg-brand-500' : 'border-gray-200 group-hover:border-brand-300'}`}>
                     {bookingData.location === loc && <Check size={18} className="text-white" strokeWidth={3} />}
