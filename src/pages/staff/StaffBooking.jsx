@@ -5,9 +5,8 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { ApplePayLogo, GooglePayLogo, VisaLogo, MastercardLogo, PayPalLogo, WaiverLogo, TapLogo } from '../../components/ui/PaymentLogos';
 
-const LOCATIONS = ['A', 'B', 'C'];
-
-const upcomingBookings = [
+// Initial mock data if storage is empty
+const INITIAL_BOOKINGS = [
   { id: 1, location: 'Location A', spot: 'A-05', date: 'Dec 25, 2025', time: '10:00 AM', duration: '2h' },
 ];
 
@@ -15,6 +14,13 @@ export default function StaffBooking() {
   const [view, setView] = useState('list'); // list, wizard
   const [step, setStep] = useState(1);
   const [paymentSubView, setPaymentSubView] = useState('method'); // method, process
+
+  // Persistence Logic
+  const [bookings, setBookings] = useState(() => {
+    const saved = localStorage.getItem('pro_parking_bookings');
+    return saved ? JSON.parse(saved) : INITIAL_BOOKINGS;
+  });
+
   const [bookingData, setBookingData] = useState({
     location: null,
     date: '',
@@ -50,6 +56,21 @@ export default function StaffBooking() {
     setIsProcessing(true);
     setTimeout(() => {
       setIsProcessing(false);
+
+      // Save booking to persistence
+      const newBooking = {
+        id: Date.now(), // Minimalist ID using timestamp
+        location: `Location ${bookingData.location}`,
+        spot: bookingData.spot || 'Auto-Assign',
+        date: bookingData.date,
+        time: bookingData.time,
+        duration: `${bookingData.duration}h`
+      };
+
+      const updatedBookings = [newBooking, ...bookings];
+      setBookings(updatedBookings);
+      localStorage.setItem('pro_parking_bookings', JSON.stringify(updatedBookings));
+
       setStep(5); // Success step
     }, 2000);
   };
@@ -367,10 +388,10 @@ export default function StaffBooking() {
         {/* Upcoming Section */}
         <div>
           <h2 className="text-lg font-bold text-gray-900 mb-3">Upcoming</h2>
-          {upcomingBookings.length > 0 ? (
+          {bookings.length > 0 ? (
             <div className="space-y-3">
-              {upcomingBookings.map(booking => (
-                <div key={booking.id} className="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 flex justify-between items-center transition-transform active:scale-[0.98]">
+              {bookings.map((booking, index) => (
+                <div key={booking.id || index} className="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 flex justify-between items-center transition-transform active:scale-[0.98]">
                   <div>
                     <h3 className="font-bold text-gray-900">{booking.location} • Spot {booking.spot}</h3>
                     <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
@@ -428,7 +449,7 @@ export default function StaffBooking() {
               <MapPin size={22} className="text-brand-500" /> Select Location
             </h3>
             <div className="grid grid-cols-1 gap-4">
-              {LOCATIONS.map((loc) => (
+              {['A', 'B', 'C'].map((loc) => (
                 <button
                   key={loc}
                   onClick={() => setBookingData({ ...bookingData, location: loc })}

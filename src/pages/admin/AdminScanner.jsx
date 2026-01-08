@@ -24,7 +24,7 @@ export default function AdminScanner() {
     } else if (status === 'validating-exit') {
       timeout = setTimeout(() => setStatus('success'), 2500);
     } else if (status === 'success') {
-      timeout = setTimeout(() => setStatus('scanning'), 4000);
+      timeout = setTimeout(() => navigate('/admin/dashboard'), 4000);
     }
     return () => clearTimeout(timeout);
   }, [status]);

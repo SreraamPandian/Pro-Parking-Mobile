@@ -9,8 +9,11 @@ export default function Login() {
   // Modes: 'visitor', 'staff', 'admin'
   const [mode, setMode] = useState('visitor');
   const [step, setStep] = useState('input'); // 'input' or 'otp'
+  const [adminStep, setAdminStep] = useState('login'); // 'login', 'forgot-input', 'forgot-otp', 'forgot-new'
   const [mobile, setMobile] = useState('');
   const [otp, setOtp] = useState('');
+  const [adminForgotContact, setAdminForgotContact] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const navigate = useNavigate();
 
   const handleSendOtp = (e) => {
@@ -36,8 +39,11 @@ export default function Login() {
   const switchMode = (newMode) => {
     setMode(newMode);
     setStep('input');
+    setAdminStep('login');
     setMobile('');
     setOtp('');
+    setAdminForgotContact('');
+    setNewPassword('');
   };
 
   return (
@@ -92,34 +98,148 @@ export default function Login() {
 
           <AnimatePresence mode="wait">
             {mode === 'admin' ? (
-              <motion.form
-                key="admin"
+              <motion.div
+                key="admin-auth"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                onSubmit={handleAdminLogin}
-                className="space-y-6"
               >
-                <div className="mb-2">
-                  <h2 className="text-xl font-bold text-gray-900">Admin Portal</h2>
-                  <p className="text-gray-500 text-sm">Secure access for managers</p>
-                </div>
-                <Input
-                  icon={Mail}
-                  type="email"
-                  placeholder="admin@parkprime.com"
-                  defaultValue="admin@parkprime.com"
-                />
-                <Input
-                  icon={Lock}
-                  type="password"
-                  placeholder="Password"
-                  defaultValue="password"
-                />
-                <Button type="submit" className="mt-4">
-                  Access Portal <ArrowRight size={20} />
-                </Button>
-              </motion.form>
+                {adminStep === 'login' && (
+                  <form onSubmit={handleAdminLogin} className="space-y-6">
+                    <div className="mb-2">
+                      <h2 className="text-xl font-bold text-gray-900">Admin Portal</h2>
+                      <p className="text-gray-500 text-sm">Secure access for managers</p>
+                    </div>
+                    <Input
+                      icon={Mail}
+                      type="email"
+                      placeholder="admin@parkprime.com"
+                      defaultValue="admin@parkprime.com"
+                    />
+                    <Input
+                      icon={Lock}
+                      type="password"
+                      placeholder="Password"
+                      defaultValue="password"
+                    />
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setAdminStep('forgot-input')}
+                        className="text-sm font-bold text-brand-600 hover:text-brand-700"
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+                    <Button type="submit" className="mt-4">
+                      Access Portal <ArrowRight size={20} />
+                    </Button>
+                  </form>
+                )}
+
+                {adminStep === 'forgot-input' && (
+                  <div className="space-y-6">
+                    <div className="mb-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <button onClick={() => setAdminStep('login')} className="text-gray-400">
+                          <ChevronLeft size={20} />
+                        </button>
+                        <h2 className="text-xl font-bold text-gray-900">Reset Password</h2>
+                      </div>
+                      <p className="text-gray-500 text-sm">Enter your registered mobile number</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-600 ml-1">Mobile Number</label>
+                      <div className="relative group flex items-center">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-900 font-bold z-10 flex items-center gap-2">
+                          <span className="text-xl">🇺🇸</span> +1
+                        </div>
+                        <input
+                          className="w-full bg-white border border-gray-200 text-gray-900 rounded-2xl py-4 pl-20 pr-4 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all shadow-sm placeholder:text-gray-400 font-medium tracking-wide"
+                          type="tel"
+                          placeholder="555-0123"
+                          value={adminForgotContact}
+                          maxLength={7}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '');
+                            if (val.length <= 7) setAdminForgotContact(val);
+                          }}
+                          required
+                        />
+                      </div>
+                      <p className="text-xs text-gray-400 ml-1">Enter 7 digits (US Format)</p>
+                    </div>
+
+                    <Button
+                      disabled={adminForgotContact.length < 7}
+                      onClick={() => setAdminStep('forgot-otp')}
+                      className="mt-4"
+                    >
+                      Send OTP <ArrowRight size={20} />
+                    </Button>
+                  </div>
+                )}
+
+                {adminStep === 'forgot-otp' && (
+                  <div className="space-y-6">
+                    <div className="mb-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <button onClick={() => setAdminStep('forgot-input')} className="text-gray-400">
+                          <ChevronLeft size={20} />
+                        </button>
+                        <h2 className="text-xl font-bold text-gray-900">Verify OTP</h2>
+                      </div>
+                      <p className="text-gray-500 text-sm">Code sent to {adminForgotContact}</p>
+                    </div>
+                    <Input
+                      icon={KeyRound}
+                      type="text"
+                      placeholder="1234"
+                      maxLength={4}
+                      className="text-center tracking-[1em] font-bold text-lg"
+                      onChange={(e) => {
+                        if (e.target.value === '1234') setAdminStep('forgot-new');
+                      }}
+                    />
+                    <p className="text-center text-xs text-gray-400 mt-4">
+                      Use <span className="font-bold text-gray-600">1234</span> as demo OTP
+                    </p>
+                  </div>
+                )}
+
+                {adminStep === 'forgot-new' && (
+                  <div className="space-y-6">
+                    <div className="mb-2">
+                      <h2 className="text-xl font-bold text-gray-900">New Password</h2>
+                      <p className="text-gray-500 text-sm">Create your new secure password</p>
+                    </div>
+                    <Input
+                      icon={Lock}
+                      type="password"
+                      placeholder="New Password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                    />
+                    <Input
+                      icon={Lock}
+                      type="password"
+                      placeholder="Confirm Password"
+                    />
+                    <Button
+                      onClick={() => {
+                        // Simulate save
+                        setAdminStep('login');
+                        setAdminForgotContact('');
+                        setNewPassword('');
+                      }}
+                      className="mt-4"
+                    >
+                      Save Password <ShieldCheck size={20} />
+                    </Button>
+                  </div>
+                )}
+              </motion.div>
             ) : (
               <motion.div
                 key="user-auth"

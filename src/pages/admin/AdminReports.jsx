@@ -5,16 +5,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 // Mock Data
+// Mock Data with Dates
 const transactions = [
-  { id: 1, method: 'Apple Pay', amount: '12.50', time: '2:30 PM', vehicle: 'ABC-1234', dept: 'Visitor', status: 'success' },
-  { id: 2, method: 'Cash', amount: '8.00', time: '2:15 PM', vehicle: 'XYZ-9876', dept: 'Staff', status: 'success' },
-  { id: 3, method: 'Visa', amount: '24.00', time: '1:55 PM', vehicle: 'LMN-4567', dept: 'Visitor', status: 'success' },
-  { id: 4, method: 'Waiver', amount: '0.00', time: '1:30 PM', vehicle: 'VIP-001', dept: 'VIP', status: 'success' },
-  { id: 5, method: 'Google Pay', amount: '15.50', time: '1:12 PM', vehicle: 'PQR-1122', dept: 'Visitor', status: 'failed' },
-  { id: 6, method: 'Mastercard', amount: '10.00', time: '12:45 PM', vehicle: 'STU-9988', dept: 'Visitor', status: 'success' },
-  { id: 7, method: 'Cash', amount: '5.00', time: '12:30 PM', vehicle: 'JKL-5544', dept: 'Staff', status: 'success' },
-  { id: 8, method: 'Apple Pay', amount: '12.50', time: '11:30 AM', vehicle: 'ABC-1234', dept: 'Visitor', status: 'success' },
-  { id: 9, method: 'Cash', amount: '8.00', time: '11:15 AM', vehicle: 'XYZ-9876', dept: 'Staff', status: 'success' },
+  { id: 1, method: 'Apple Pay', amount: '12.50', time: '2:30 PM', date: '2026-01-08', vehicle: 'ABC-1234', dept: 'Visitor', status: 'success' },
+  { id: 2, method: 'Cash', amount: '8.00', time: '2:15 PM', date: '2026-01-08', vehicle: 'XYZ-9876', dept: 'Staff', status: 'success' },
+  { id: 3, method: 'Visa', amount: '24.00', time: '1:55 PM', date: '2026-01-07', vehicle: 'LMN-4567', dept: 'Visitor', status: 'success' },
+  { id: 4, method: 'Waiver', amount: '0.00', time: '1:30 PM', date: '2026-01-07', vehicle: 'VIP-001', dept: 'VIP', status: 'success' },
+  { id: 5, method: 'Google Pay', amount: '15.50', time: '1:12 PM', date: '2026-01-06', vehicle: 'PQR-1122', dept: 'Visitor', status: 'failed' },
+  { id: 6, method: 'Mastercard', amount: '10.00', time: '12:45 PM', date: '2026-01-05', vehicle: 'STU-9988', dept: 'Visitor', status: 'success' },
+  { id: 7, method: 'Cash', amount: '5.00', time: '12:30 PM', date: '2026-01-04', vehicle: 'JKL-5544', dept: 'Staff', status: 'success' },
+  { id: 8, method: 'Apple Pay', amount: '12.50', time: '11:30 AM', date: '2026-01-03', vehicle: 'ABC-1234', dept: 'Visitor', status: 'success' },
+  { id: 9, method: 'Cash', amount: '8.00', time: '11:15 AM', date: '2026-01-02', vehicle: 'XYZ-9876', dept: 'Staff', status: 'success' },
 ];
 
 const FilterDropdown = ({ label, active, options, onSelect }) => {
@@ -33,12 +34,12 @@ const FilterDropdown = ({ label, active, options, onSelect }) => {
 
   return (
     <div className="relative" ref={ref}>
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
           flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all whitespace-nowrap flex-shrink-0
-          ${active 
-            ? 'bg-brand-900 text-white shadow-lg shadow-brand-900/20' 
+          ${active
+            ? 'bg-brand-900 text-white shadow-lg shadow-brand-900/20'
             : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}
         `}
       >
@@ -48,7 +49,7 @@ const FilterDropdown = ({ label, active, options, onSelect }) => {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
@@ -79,10 +80,36 @@ export default function AdminReports() {
   const [methodFilter, setMethodFilter] = useState('All');
   const [deptFilter, setDeptFilter] = useState('All');
 
+  // Custom Range State
+  const [customRange, setCustomRange] = useState({ start: '', end: '' });
+
   // Filter Logic
   const filteredTransactions = transactions.filter(tx => {
+    // 1. Method Filter
     if (methodFilter !== 'All' && !tx.method.includes(methodFilter)) return false;
+
+    // 2. Department Filter
     if (deptFilter !== 'All' && tx.dept !== deptFilter) return false;
+
+    // 3. Date Filter Logic
+    const today = new Date('2026-01-08'); // Reference date
+    const txDate = new Date(tx.date);
+
+    if (dateFilter === 'Today') {
+      if (tx.date !== '2026-01-08') return false;
+    } else if (dateFilter === 'Yesterday') {
+      if (tx.date !== '2026-01-07') return false;
+    } else if (dateFilter === 'This Week') {
+      const lastWeek = new Date(today);
+      lastWeek.setDate(today.getDate() - 7);
+      if (txDate < lastWeek || txDate > today) return false;
+    } else if (dateFilter === 'Custom Range') {
+      if (!customRange.start || !customRange.end) return true;
+      const start = new Date(customRange.start);
+      const end = new Date(customRange.end);
+      if (txDate < start || txDate > end) return false;
+    }
+
     return true;
   });
 
@@ -106,37 +133,67 @@ export default function AdminReports() {
       <div className="sticky top-0 bg-white/90 backdrop-blur-xl z-40 border-b border-gray-100/50 px-6 py-4 shadow-sm">
         <div className="flex items-center gap-4 mb-4">
           <button onClick={() => navigate('/admin/dashboard')} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
-             <ArrowLeft size={20} className="text-gray-600" />
+            <ArrowLeft size={20} className="text-gray-600" />
           </button>
           <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
         </div>
-        
+
         {/* Changed from overflow-x-auto to flex-wrap to prevent clipping of dropdowns */}
         <div className="flex flex-wrap gap-3 pb-2">
-          <FilterDropdown 
-            label={dateFilter} 
-            active={true} 
+          <FilterDropdown
+            label={dateFilter}
+            active={true}
             options={['Today', 'Yesterday', 'This Week', 'Custom Range']}
             onSelect={setDateFilter}
           />
-          <FilterDropdown 
-            label={methodFilter === 'All' ? 'Method: All' : methodFilter} 
-            active={methodFilter !== 'All'} 
+          <FilterDropdown
+            label={methodFilter === 'All' ? 'Method: All' : methodFilter}
+            active={methodFilter !== 'All'}
             options={['All', 'Cash', 'Card', 'Apple Pay', 'Google Pay', 'Waiver']}
             onSelect={setMethodFilter}
           />
-          <FilterDropdown 
-            label={deptFilter === 'All' ? 'Dept: All' : deptFilter} 
-            active={deptFilter !== 'All'} 
+          <FilterDropdown
+            label={deptFilter === 'All' ? 'Dept: All' : deptFilter}
+            active={deptFilter !== 'All'}
             options={['All', 'Visitor', 'Staff', 'VIP']}
             onSelect={setDeptFilter}
           />
         </div>
+
+        {/* Custom Range Inputs */}
+        <AnimatePresence>
+          {dateFilter === 'Custom Range' && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-4 overflow-hidden"
+            >
+              <div className="flex-1">
+                <input
+                  type="date"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-brand-500"
+                  value={customRange.start}
+                  onChange={(e) => setCustomRange({ ...customRange, start: e.target.value })}
+                />
+              </div>
+              <span className="text-gray-400 font-bold">to</span>
+              <div className="flex-1">
+                <input
+                  type="date"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm outline-none focus:border-brand-500"
+                  value={customRange.end}
+                  onChange={(e) => setCustomRange({ ...customRange, end: e.target.value })}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="p-6 space-y-6">
         {/* Revenue Summary Card */}
-        <motion.div 
+        <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="bg-brand-900 rounded-[2.5rem] p-8 text-white shadow-xl shadow-brand-900/20 relative overflow-hidden"
@@ -160,11 +217,11 @@ export default function AdminReports() {
         <div className="space-y-4">
           <h3 className="font-bold text-gray-900 ml-1">Recent Activity</h3>
           {filteredTransactions.map((tx, index) => (
-            <motion.div 
+            <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: index * 0.05 }}
-              key={tx.id} 
+              key={tx.id}
               className={`bg-white p-5 rounded-3xl shadow-soft flex items-center justify-between border border-gray-50/50 hover:shadow-lg transition-shadow
                 ${tx.status === 'failed' ? 'opacity-60 grayscale' : ''}`}
             >
@@ -187,7 +244,7 @@ export default function AdminReports() {
               </div>
             </motion.div>
           ))}
-          
+
           {filteredTransactions.length === 0 && (
             <div className="text-center py-12 text-gray-400">
               <p>No transactions found</p>

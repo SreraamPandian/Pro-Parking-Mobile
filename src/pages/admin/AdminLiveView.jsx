@@ -24,6 +24,26 @@ export default function AdminLiveView() {
         <p className="text-gray-500">Real-time Vehicle Status</p>
       </header>
 
+      {/* Summary Stats Cards - Matching Image */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-blue-50/60 p-5 rounded-[2rem] border border-blue-100/40">
+          <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.1em] mb-1">Total Slots</p>
+          <p className="text-3xl font-black text-blue-800">100</p>
+        </div>
+        <div className="bg-green-50/60 p-5 rounded-[2rem] border border-green-100/40">
+          <p className="text-[10px] font-black text-green-500 uppercase tracking-[0.1em] mb-1">Available</p>
+          <p className="text-3xl font-black text-green-800">25</p>
+        </div>
+        <div className="bg-[#FFFBEB] p-5 rounded-[2rem] border border-amber-100/40">
+          <p className="text-[10px] font-black text-[#B45309] uppercase tracking-[0.1em] mb-1">Reserved</p>
+          <p className="text-3xl font-black text-[#92400E]">20</p>
+        </div>
+        <div className="bg-red-50/60 p-5 rounded-[2rem] border border-red-100/40">
+          <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.1em] mb-1">Occupied</p>
+          <p className="text-3xl font-black text-red-800">55</p>
+        </div>
+      </div>
+
       <div className="flex gap-3">
         <div className="flex-1">
           <Input
