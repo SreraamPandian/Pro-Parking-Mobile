@@ -51,38 +51,37 @@ export default function Login() {
       <div className="relative z-10 flex-1 flex flex-col px-6 pt-16 pb-8">
         {/* Header */}
         <div className="text-center mb-10 text-white">
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-6 border border-white/20"
           >
             <ShieldCheck size={32} className="text-white" />
           </motion.div>
-          <h1 className="text-3xl font-bold mb-2">ParkPrime</h1>
-          <p className="text-brand-100">Premium Parking Solutions</p>
+          <h1 className="text-3xl font-bold">Pro - Parking</h1>
         </div>
 
         {/* Login Card */}
-        <motion.div 
+        <motion.div
           layout
           className="bg-white rounded-[2rem] shadow-xl shadow-brand-900/10 p-8 mb-auto"
         >
           {/* 3-Way Toggle */}
           <div className="flex justify-center mb-8">
             <div className="bg-gray-100 p-1 rounded-xl flex w-full">
-              <button 
+              <button
                 onClick={() => switchMode('visitor')}
                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${mode === 'visitor' ? 'bg-white text-brand-900 shadow-sm' : 'text-gray-500'}`}
               >
                 Visitor
               </button>
-              <button 
+              <button
                 onClick={() => switchMode('staff')}
                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${mode === 'staff' ? 'bg-white text-brand-900 shadow-sm' : 'text-gray-500'}`}
               >
                 Staff
               </button>
-              <button 
+              <button
                 onClick={() => switchMode('admin')}
                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${mode === 'admin' ? 'bg-white text-brand-900 shadow-sm' : 'text-gray-500'}`}
               >
@@ -105,16 +104,16 @@ export default function Login() {
                   <h2 className="text-xl font-bold text-gray-900">Admin Portal</h2>
                   <p className="text-gray-500 text-sm">Secure access for managers</p>
                 </div>
-                <Input 
-                  icon={Mail} 
-                  type="email" 
-                  placeholder="admin@parkprime.com" 
+                <Input
+                  icon={Mail}
+                  type="email"
+                  placeholder="admin@parkprime.com"
                   defaultValue="admin@parkprime.com"
                 />
-                <Input 
-                  icon={Lock} 
-                  type="password" 
-                  placeholder="Password" 
+                <Input
+                  icon={Lock}
+                  type="password"
+                  placeholder="Password"
                   defaultValue="password"
                 />
                 <Button type="submit" className="mt-4">
@@ -136,15 +135,15 @@ export default function Login() {
                       </h2>
                       <p className="text-gray-500 text-sm">Enter your mobile number</p>
                     </div>
-                    
+
                     {/* US Mobile Input */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-gray-600 ml-1">Mobile Number</label>
                       <div className="relative group flex items-center">
-                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-900 font-bold z-10 flex items-center gap-2">
-                            <span className="text-xl">🇺🇸</span> +1
-                         </div>
-                        <input 
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-900 font-bold z-10 flex items-center gap-2">
+                          <span className="text-xl">🇺🇸</span> +1
+                        </div>
+                        <input
                           className="w-full bg-white border border-gray-200 text-gray-900 rounded-2xl py-4 pl-20 pr-4 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all shadow-sm placeholder:text-gray-400 font-medium tracking-wide"
                           type="tel"
                           placeholder="555-0123"
@@ -169,16 +168,16 @@ export default function Login() {
                     <div className="mb-2">
                       <div className="flex items-center gap-2 mb-2">
                         <button type="button" onClick={() => setStep('input')} className="text-gray-400 hover:text-gray-600">
-                           <ChevronLeft size={20} />
+                          <ChevronLeft size={20} />
                         </button>
                         <h2 className="text-xl font-bold text-gray-900">Verify OTP</h2>
                       </div>
                       <p className="text-gray-500 text-sm">Code sent to +1 {mobile}</p>
                     </div>
-                    <Input 
-                      icon={KeyRound} 
-                      type="text" 
-                      placeholder="1234" 
+                    <Input
+                      icon={KeyRound}
+                      type="text"
+                      placeholder="1234"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
                       maxLength={4}
