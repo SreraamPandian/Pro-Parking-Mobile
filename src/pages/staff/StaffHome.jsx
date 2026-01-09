@@ -1,11 +1,29 @@
-import React from 'react';
-import { CheckCircle2, QrCode } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useOutletContext } from 'react-router-dom';
+import { Bell, CheckCircle2, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useOutletContext } from 'react-router-dom';
 
 export default function StaffHome() {
   const { type } = useOutletContext();
+  const navigate = useNavigate();
   const isStaff = type === 'staff';
+  const basePath = type === 'visitor' ? '/visitor' : '/staff';
+
+  const [hasUnread, setHasUnread] = useState(false);
+
+  useEffect(() => {
+    const checkUnread = () => {
+      const saved = localStorage.getItem('pro_parking_notifications');
+      if (saved) {
+        const notifs = JSON.parse(saved);
+        setHasUnread(notifs.some(n => n.unread));
+      }
+    };
+
+    checkUnread();
+    window.addEventListener('storage', checkUnread);
+    return () => window.removeEventListener('storage', checkUnread);
+  }, []);
 
   return (
     <div className="p-6 pb-32 space-y-6">
@@ -14,8 +32,19 @@ export default function StaffHome() {
           <h1 className="text-2xl font-bold text-gray-900">{isStaff ? 'Staff Pass' : 'Visitor Pass'}</h1>
           <p className="text-gray-500">Digital Identity</p>
         </div>
-        <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center text-brand-700 font-bold">
-          AJ
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(`${basePath}/notifications`)}
+            className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-600 shadow-soft relative"
+          >
+            <Bell size={20} />
+            {hasUnread && (
+              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+            )}
+          </button>
+          <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center text-brand-700 font-bold">
+            AJ
+          </div>
         </div>
       </header>
 

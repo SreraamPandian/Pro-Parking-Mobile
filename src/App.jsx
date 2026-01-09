@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Outlet, useLocation, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Outlet, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
 
 // User Pages (Shared by Visitor & Staff)
@@ -9,6 +9,7 @@ import StaffProfile from './pages/staff/StaffProfile';
 import StaffBooking from './pages/staff/StaffBooking';
 import StaffPayment from './pages/staff/StaffPayment';
 import StaffHistory from './pages/staff/StaffHistory';
+import StaffNotifications from './pages/staff/StaffNotifications';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -21,13 +22,18 @@ import AdminTransactions from './pages/admin/AdminTransactions'; // New Import
 // Components
 import { BottomNav } from './components/layout/BottomNav';
 import { Home, Car, User, LayoutDashboard, List, FileText, Settings, MapPin, ScanLine } from 'lucide-react';
+import { NotificationToast } from './components/ui/NotificationToast';
 
 // Layout for Visitor and Staff
 const UserLayout = ({ type }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [showNotification, setShowNotification] = useState(false);
+  const [newBooking, setNewBooking] = useState(null);
+
   // Determine base path based on type
   const basePath = type === 'visitor' ? '/visitor' : '/staff';
-  
+
   const hideNav = location.pathname === `${basePath}/payment` || location.pathname === `${basePath}/history`;
 
   const navItems = [
@@ -38,8 +44,68 @@ const UserLayout = ({ type }) => {
     { icon: User, label: 'Profile', path: `${basePath}/profile` },
   ];
 
+  useEffect(() => {
+    // Check if we've already shown the mock web booking this session
+    const hasShown = sessionStorage.getItem('pro_parking_web_booking_shown');
+
+    if (!hasShown && (location.pathname === `${basePath}/home`)) {
+      const timer = setTimeout(() => {
+        const mockBooking = {
+          id: 'web-' + Date.now(),
+          location: 'Location B',
+          spot: 'B-12',
+          date: 'Jan 09, 2026',
+          time: '11:45 AM',
+          duration: '3h',
+          isWeb: true
+        };
+
+        setNewBooking(mockBooking);
+        setShowNotification(true);
+        sessionStorage.setItem('pro_parking_web_booking_shown', 'true');
+
+        // Notification record for the List Page
+        const mockNotif = {
+          id: 'notif-' + Date.now(),
+          type: 'web-booking',
+          title: 'New Web Booking',
+          message: `Booking received for ${mockBooking.location} at ${mockBooking.time}.`,
+          time: 'Just now',
+          unread: true,
+          action: true,
+          actionLabel: 'View Details',
+          actionPath: `${basePath}/booking`
+        };
+
+        const savedNotifs = localStorage.getItem('pro_parking_notifications');
+        const existingNotifs = savedNotifs ? JSON.parse(savedNotifs) : [];
+        localStorage.setItem('pro_parking_notifications', JSON.stringify([mockNotif, ...existingNotifs]));
+
+        // Inject into localStorage for persistence in Upcoming list
+        const saved = localStorage.getItem('pro_parking_bookings');
+        const existing = saved ? JSON.parse(saved) : [];
+        const updated = [mockBooking, ...existing];
+        localStorage.setItem('pro_parking_bookings', JSON.stringify(updated));
+
+        // Trigger a custom event
+        window.dispatchEvent(new Event('storage'));
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname, basePath]);
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <NotificationToast
+        show={showNotification}
+        booking={newBooking}
+        onClose={() => setShowNotification(false)}
+        onView={() => {
+          setShowNotification(false);
+          navigate(`${basePath}/booking`);
+        }}
+      />
       <Outlet context={{ type }} />
       {!hideNav && <BottomNav items={navItems} />}
     </div>
@@ -70,7 +136,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        
+
         {/* Visitor Routes */}
         <Route path="/visitor" element={<UserLayout type="visitor" />}>
           <Route path="home" element={<StaffHome />} />
@@ -79,6 +145,7 @@ function App() {
           <Route path="booking" element={<StaffBooking />} />
           <Route path="payment" element={<StaffPayment />} />
           <Route path="history" element={<StaffHistory />} />
+          <Route path="notifications" element={<StaffNotifications />} />
         </Route>
 
         {/* Staff Routes (New 3rd Portal) */}
@@ -89,6 +156,7 @@ function App() {
           <Route path="booking" element={<StaffBooking />} />
           <Route path="payment" element={<StaffPayment />} />
           <Route path="history" element={<StaffHistory />} />
+          <Route path="notifications" element={<StaffNotifications />} />
         </Route>
 
         {/* Admin Routes */}
