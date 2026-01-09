@@ -40,14 +40,8 @@ export default function AdminScanner() {
         </button>
       </div>
 
-      {/* Camera View */}
-      <div className="flex-1 relative overflow-hidden">
-        <img
-          src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=2070&auto=format&fit=crop"
-          alt="Camera Feed"
-          className="w-full h-full object-cover opacity-60"
-        />
-
+      {/* Camera View - Mocked as Black Background */}
+      <div className="flex-1 relative overflow-hidden bg-black">
         {/* Scanning Overlay */}
         <AnimatePresence>
           {status === 'scanning' && (
