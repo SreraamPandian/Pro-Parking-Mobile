@@ -1,31 +1,56 @@
 import React, { useState } from 'react';
-import { Car, Plus, ShieldCheck, X } from 'lucide-react';
+import { Car, Plus, ShieldCheck, X, Trash2, Edit2, Palette, Disc } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 
 const initialVehicles = [
-  { id: 1, name: 'Tesla Model 3', plate: 'ABC-1234', color: 'White', status: 'Verified' },
-  { id: 2, name: 'Toyota Camry', plate: 'XYZ-9876', color: 'Silver', status: 'Verified' },
+  { id: 1, make: 'Tesla', model: 'Model 3', plate: 'ABC-1234', color: 'White', status: 'Verified' },
+  { id: 2, make: 'Toyota', model: 'Camry', plate: 'XYZ-9876', color: 'Silver', status: 'Verified' },
 ];
 
 export default function StaffVehicles() {
   const [vehicles, setVehicles] = useState(initialVehicles);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newVehicle, setNewVehicle] = useState({ plate: '' });
+  const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentVehicle, setCurrentVehicle] = useState({ id: '', make: '', model: '', plate: '', color: '' });
 
-  const handleAddVehicle = (e) => {
+  const resetForm = () => {
+    setCurrentVehicle({ id: '', make: '', model: '', plate: '', color: '' });
+    setIsEditing(false);
+  };
+
+  const openAddModal = () => {
+    resetForm();
+    setShowModal(true);
+  };
+
+  const openEditModal = (vehicle) => {
+    setCurrentVehicle(vehicle);
+    setIsEditing(true);
+    setShowModal(true);
+  };
+
+  const handleSaveVehicle = (e) => {
     e.preventDefault();
-    const vehicle = {
-      id: Date.now(),
-      name: 'New Vehicle',
-      plate: newVehicle.plate,
-      color: 'Unknown',
-      status: 'Pending',
-    };
-    setVehicles([...vehicles, vehicle]);
-    setShowAddModal(false);
-    setNewVehicle({ plate: '' });
+    if (isEditing) {
+      setVehicles(vehicles.map(v => v.id === currentVehicle.id ? { ...currentVehicle, status: v.status } : v));
+    } else {
+      const newCar = {
+        ...currentVehicle,
+        id: Date.now(),
+        status: 'Pending',
+      };
+      setVehicles([...vehicles, newCar]);
+    }
+    setShowModal(false);
+    resetForm();
+  };
+
+  const handleDeleteVehicle = (id) => {
+    if (window.confirm('Are you sure you want to remove this vehicle?')) {
+      setVehicles(vehicles.filter(v => v.id !== id));
+    }
   };
 
   return (
@@ -35,8 +60,8 @@ export default function StaffVehicles() {
           <h1 className="text-2xl font-bold text-gray-900">My Vehicles</h1>
           <p className="text-gray-500">Registered Cars</p>
         </div>
-        <button 
-          onClick={() => setShowAddModal(true)}
+        <button
+          onClick={openAddModal}
           className="w-10 h-10 bg-brand-900 text-white rounded-full flex items-center justify-center shadow-lg shadow-brand-900/20 active:scale-95 transition-transform"
         >
           <Plus size={24} />
@@ -44,59 +69,116 @@ export default function StaffVehicles() {
       </header>
 
       <div className="space-y-4">
+        {vehicles.length === 0 && (
+          <div className="text-center py-10 text-gray-400">
+            <Car size={48} className="mx-auto mb-2 opacity-50" />
+            <p>No vehicles added yet.</p>
+          </div>
+        )}
         {vehicles.map((car) => (
-          <div key={car.id} className="bg-white p-5 rounded-2xl shadow-soft border border-gray-100 flex items-center justify-between group">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 group-hover:bg-brand-50 group-hover:text-brand-600 transition-colors">
-                <Car size={24} />
+          <div key={car.id} className="bg-white p-5 rounded-3xl shadow-soft border border-gray-100 flex flex-col gap-4 group">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-brand-50 group-hover:text-brand-600 transition-colors">
+                  <Car size={24} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-lg">{car.make} {car.model}</h3>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <span className="font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-700 font-semibold">{car.plate}</span>
+                    <span>•</span>
+                    <span>{car.color}</span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-gray-900">{car.name}</h3>
-                <p className="text-sm text-gray-500">{car.plate} {car.color !== 'Unknown' && `• ${car.color}`}</p>
+              <div className="flex flex-col items-end gap-2">
+                <span className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg ${car.status === 'Verified' ? 'text-green-600 bg-green-50' : 'text-amber-600 bg-amber-50'}`}>
+                  <ShieldCheck size={12} /> {car.status}
+                </span>
               </div>
             </div>
-            <div className="flex flex-col items-end">
-              <span className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg ${car.status === 'Verified' ? 'text-green-600 bg-green-50' : 'text-amber-600 bg-amber-50'}`}>
-                <ShieldCheck size={12} /> {car.status}
-              </span>
+
+            <div className="flex gap-2 pt-2 border-t border-gray-50">
+              <button
+                onClick={() => openEditModal(car)}
+                className="flex-1 py-2 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+              >
+                <Edit2 size={14} /> Edit
+              </button>
+              <button
+                onClick={() => handleDeleteVehicle(car.id)}
+                className="flex-1 py-2 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
+              >
+                <Trash2 size={14} /> Delete
+              </button>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Add Vehicle Modal - Increased Z-Index to be above BottomNav (z-50) */}
+      {/* Add/Edit Vehicle Modal */}
       <AnimatePresence>
-        {showAddModal && (
-          <motion.div 
+        {showModal && (
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-end sm:items-center justify-center p-4"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center p-4"
           >
-            <motion.div 
+            <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              className="bg-white w-full max-w-md rounded-[2rem] p-6 shadow-2xl"
+              className="bg-white w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl relative"
             >
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Add New Vehicle</h2>
-                <button onClick={() => setShowAddModal(false)} className="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-bold text-gray-900">{isEditing ? 'Edit Vehicle' : 'Add New Vehicle'}</h2>
+                <button onClick={() => setShowModal(false)} className="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors">
                   <X size={20} />
                 </button>
               </div>
-              
-              <form onSubmit={handleAddVehicle} className="space-y-4">
-                <Input 
-                  icon={Car}
+
+              <form onSubmit={handleSaveVehicle} className="space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    icon={Disc}
+                    label="Make"
+                    placeholder="e.g. Toyota"
+                    value={currentVehicle.make}
+                    onChange={(e) => setCurrentVehicle({ ...currentVehicle, make: e.target.value })}
+                    required
+                  />
+                  <Input
+                    icon={Car}
+                    label="Model"
+                    placeholder="e.g. Camry"
+                    value={currentVehicle.model}
+                    onChange={(e) => setCurrentVehicle({ ...currentVehicle, model: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <Input
+                  icon={ShieldCheck}
                   label="License Plate"
                   placeholder="ABC-1234"
-                  value={newVehicle.plate}
-                  onChange={(e) => setNewVehicle({...newVehicle, plate: e.target.value})}
+                  value={currentVehicle.plate}
+                  onChange={(e) => setCurrentVehicle({ ...currentVehicle, plate: e.target.value })}
                   required
                 />
-                {/* Mobile Number Removed */}
-                <Button type="submit" className="mt-4">Register Vehicle</Button>
+
+                <Input
+                  icon={Palette}
+                  label="Color"
+                  placeholder="e.g. Silver"
+                  value={currentVehicle.color}
+                  onChange={(e) => setCurrentVehicle({ ...currentVehicle, color: e.target.value })}
+                  required
+                />
+
+                <Button type="submit" className="w-full mt-4 py-4 text-lg shadow-xl shadow-brand-900/20">
+                  {isEditing ? 'Update Vehicle' : 'Register Vehicle'}
+                </Button>
               </form>
             </motion.div>
           </motion.div>

@@ -152,12 +152,16 @@ export default function StaffBooking() {
             />
           </div>
         </div>
+        <div className="flex items-center gap-3 pt-2">
+          <input type="checkbox" id="save-card-booking" className="w-5 h-5 rounded-lg border-gray-300 text-brand-600 focus:ring-brand-500" />
+          <label htmlFor="save-card-booking" className="text-sm font-medium text-gray-600">Save this card for future use</label>
+        </div>
       </div>
       <div className="flex gap-4">
         <Button variant="secondary" onClick={() => setPaymentSubView('method')}>Back</Button>
         <Button onClick={handleConfirmPayment}>Pay ${(5 + parseInt(bookingData.duration) * 2).toFixed(2)}</Button>
       </div>
-    </div>
+    </div >
   );
 
   const renderPayPalFlow = () => (

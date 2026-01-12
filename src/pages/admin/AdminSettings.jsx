@@ -63,7 +63,7 @@ export default function AdminSettings() {
                 />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Admin User</h2>
+                <h2 className="text-xl font-bold text-gray-900">mike corleone</h2>
                 <p className="text-gray-500">Manager Role</p>
               </div>
             </div>
@@ -97,14 +97,14 @@ export default function AdminSettings() {
                         <Shield size={18} className="text-brand-500" />
                         <div>
                           <p className="text-xs text-gray-400 font-bold uppercase">Full Name</p>
-                          <p className="font-medium text-gray-900">Admin User</p>
+                          <p className="font-medium text-gray-900">mike corleone</p>
                         </div>
                       </div>
                       <div className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center gap-3">
                         <Mail size={18} className="text-brand-500" />
                         <div>
                           <p className="text-xs text-gray-400 font-bold uppercase">Email Address</p>
-                          <p className="font-medium text-gray-900">admin@parkprime.com</p>
+                          <p className="font-medium text-gray-900">mike@proparking.com</p>
                         </div>
                       </div>
                     </div>

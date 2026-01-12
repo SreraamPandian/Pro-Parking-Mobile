@@ -81,7 +81,7 @@ export default function Login() {
                 onClick={() => switchMode('admin')}
                 className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${mode === 'admin' ? 'bg-white text-brand-900 shadow-sm' : 'text-gray-500'}`}
               >
-                Staff
+                mike corleone
               </button>
             </div>
           </div>
@@ -103,8 +103,8 @@ export default function Login() {
                     <Input
                       icon={Mail}
                       type="email"
-                      placeholder="admin@parkprime.com"
-                      defaultValue="admin@parkprime.com"
+                      placeholder="mike@proparking.com"
+                      defaultValue="mike@proparking.com"
                     />
                     <Input
                       icon={Lock}
@@ -269,7 +269,7 @@ export default function Login() {
                       <p className="text-xs text-gray-400 ml-1">Enter 7-10 digits (US Format)</p>
                     </div>
 
-                    <Button type="submit" className="mt-4">
+                    <Button disabled={mobile.length < 7 || mobile.length > 10} type="submit" className="mt-4">
                       Send Code <ArrowRight size={20} />
                     </Button>
                   </form>
@@ -306,7 +306,7 @@ export default function Login() {
             )}
           </AnimatePresence>
         </motion.div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

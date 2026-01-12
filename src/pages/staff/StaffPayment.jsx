@@ -135,9 +135,14 @@ export default function StaffPayment() {
 
   const renderMethodSelection = () => (
     <div className="h-full bg-gray-50 p-6 flex flex-col overflow-y-auto">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Payment</h1>
-        <p className="text-gray-500">Select payment method</p>
+      <header className="mb-6 flex items-center gap-4">
+        <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm hover:bg-gray-100 transition-colors text-gray-600">
+          <ChevronLeft size={24} />
+        </button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Payment</h1>
+          <p className="text-gray-500 text-sm">Select payment method</p>
+        </div>
       </header>
 
       <div className="bg-white p-6 rounded-3xl shadow-soft mb-6 flex-shrink-0">
@@ -250,6 +255,10 @@ export default function StaffPayment() {
                 maxLength={3}
               />
             </div>
+          </div>
+          <div className="flex items-center gap-3 pt-2">
+            <input type="checkbox" id="save-card" className="w-5 h-5 rounded-lg border-gray-300 text-brand-600 focus:ring-brand-500" />
+            <label htmlFor="save-card" className="text-sm font-medium text-gray-600">Save this card for future use</label>
           </div>
         </div>
       </div>

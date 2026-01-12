@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
-import { User, LogOut, History, ChevronRight, Mail, Phone, Shield, Camera } from 'lucide-react';
+import { User, LogOut, History, ChevronRight, Mail, Phone, Shield, Camera, Lock, CheckCircle2, X, ArrowRight } from 'lucide-react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Input } from '../../components/ui/Input';
+import { Button } from '../../components/ui/Button';
 
 export default function StaffProfile() {
   const navigate = useNavigate();
@@ -26,9 +28,17 @@ export default function StaffProfile() {
   // New State for Editable Details
   const [name, setName] = useState(profileData.name);
   const [email, setEmail] = useState(profileData.email);
+  const [mobile, setMobile] = useState('+1 (555) 123-4567');
   const [profileImage, setProfileImage] = useState(profileData.image);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
+
+  // Mobile Verification State
+  const [showMobileModal, setShowMobileModal] = useState(false);
+  const [mobileStep, setMobileStep] = useState('verify-email'); // verify-email, verify-new, success
+  const [emailOtp, setEmailOtp] = useState('');
+  const [newMobile, setNewMobile] = useState('');
+  const [mobileOtp, setMobileOtp] = useState('');
 
   // Handle profile photo upload
   const handlePhotoUpload = (event) => {
@@ -42,13 +52,25 @@ export default function StaffProfile() {
     }
   };
 
+  const handleMobileUpdate = () => {
+    setMobile(newMobile);
+    setMobileStep('success');
+    setTimeout(() => {
+      setShowMobileModal(false);
+      setMobileStep('verify-email');
+      setNewMobile('');
+      setEmailOtp('');
+      setMobileOtp('');
+    }, 2000);
+  };
+
   // Filtered menu items as requested
   const menuItems = [
     { icon: History, label: 'Payment History', path: type === 'visitor' ? '/visitor/history' : '/staff/history' },
   ];
 
   return (
-    <div className="p-6 pb-32 space-y-8">
+    <div className="p-6 pb-32 space-y-8 relative">
       <header>
         <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
       </header>
@@ -154,12 +176,21 @@ export default function StaffProfile() {
                     {isEditingEmail ? 'Save' : 'Edit'}
                   </button>
                 </div>
-                <div className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center gap-3">
-                  <Phone size={18} className="text-brand-500" />
-                  <div>
-                    <p className="text-xs text-gray-400 font-bold uppercase">Mobile Number</p>
-                    <p className="font-medium text-gray-900">+1 (555) 123-4567</p>
+
+                <div className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between group">
+                  <div className="flex items-center gap-3">
+                    <Phone size={18} className="text-brand-500" />
+                    <div>
+                      <p className="text-xs text-gray-400 font-bold uppercase">Mobile Number</p>
+                      <p className="font-medium text-gray-900">{mobile}</p>
+                    </div>
                   </div>
+                  <button
+                    onClick={() => { setShowMobileModal(true); setMobileStep('verify-email'); }}
+                    className="p-2 text-brand-600 font-bold text-xs uppercase tracking-widest hover:bg-brand-50 rounded-lg transition-colors"
+                  >
+                    Edit
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -192,6 +223,126 @@ export default function StaffProfile() {
         <LogOut size={20} />
         Sign Out
       </button>
+
+      {/* Mobile Update Modal */}
+      <AnimatePresence>
+        {showMobileModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl relative overflow-hidden"
+            >
+              <button onClick={() => setShowMobileModal(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <X size={20} />
+              </button>
+
+              <AnimatePresence mode="wait">
+                {mobileStep === 'verify-email' && (
+                  <motion.div
+                    key="verify-email"
+                    initial={{ x: 20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -20, opacity: 0 }}
+                    className="space-y-4"
+                  >
+                    <div className="w-12 h-12 bg-brand-50 rounded-full flex items-center justify-center text-brand-600 mb-2">
+                      <Mail size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">Verify Email</h3>
+                      <p className="text-sm text-gray-500 mt-1">We sent a code to <span className="font-medium text-gray-900">{email}</span></p>
+                    </div>
+                    <Input
+                      label="Enter Code"
+                      placeholder="123456"
+                      value={emailOtp}
+                      onChange={(e) => setEmailOtp(e.target.value)}
+                      className="text-center text-lg tracking-widest"
+                      maxLength={6}
+                    />
+                    <Button
+                      onClick={() => setMobileStep('verify-new')}
+                      disabled={emailOtp.length < 6}
+                      className="w-full mt-2"
+                    >
+                      Verify & Continue <ArrowRight size={18} className="ml-2" />
+                    </Button>
+                  </motion.div>
+                )}
+
+                {mobileStep === 'verify-new' && (
+                  <motion.div
+                    key="verify-new"
+                    initial={{ x: 20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -20, opacity: 0 }}
+                    className="space-y-4"
+                  >
+                    <div className="w-12 h-12 bg-brand-50 rounded-full flex items-center justify-center text-brand-600 mb-2">
+                      <Phone size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">New Number</h3>
+                      <p className="text-sm text-gray-500 mt-1">Enter your new mobile number and the verification code.</p>
+                    </div>
+                    <Input
+                      label="Mobile Number"
+                      placeholder="+1 (555) 000-0000"
+                      value={newMobile}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        if (val.length <= 10) setNewMobile(val);
+                      }}
+                      maxLength={10}
+                    />
+                    <div className="flex justify-between text-xs text-gray-400 px-1">
+                      <span>Enter 7-10 digits</span>
+                      <span className={`${newMobile.length >= 7 ? 'text-green-500' : ''}`}>{newMobile.length}/10</span>
+                    </div>
+                    <Input
+                      label="Verification Code (SMS)"
+                      placeholder="123456"
+                      value={mobileOtp}
+                      onChange={(e) => setMobileOtp(e.target.value)}
+                      className="text-center text-lg tracking-widest"
+                      maxLength={6}
+                    />
+                    <Button
+                      onClick={handleMobileUpdate}
+                      disabled={newMobile.length < 7 || newMobile.length > 10 || mobileOtp.length < 6}
+                      className="w-full mt-2"
+                    >
+                      Verify & Update Number
+                    </Button>
+                  </motion.div>
+                )}
+
+                {mobileStep === 'success' && (
+                  <motion.div
+                    key="success"
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="flex flex-col items-center text-center py-6"
+                  >
+                    <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4 shadow-lg shadow-green-100">
+                      <CheckCircle2 size={40} />
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900">Success!</h3>
+                    <p className="text-gray-500 mt-2">Your mobile number has been securely updated.</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
