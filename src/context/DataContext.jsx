@@ -52,8 +52,8 @@ const INITIAL_BARRIERS = {
 };
 
 const INITIAL_USER = {
-    name: 'Aiyana Redfeather',
-    email: 'aiyanaredfeather@proparking.com',
+    name: 'Dakota Whitecloud',
+    email: 'dakotawhitecloud@proparking.com',
     mobile: '+1 (555) 123-4567',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQF2yaox2cALIq_yyd-9qEyovEsficJr7X9QQ&s'
 };
