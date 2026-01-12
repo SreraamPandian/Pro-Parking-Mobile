@@ -104,7 +104,7 @@ export default function StaffHome() {
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-white p-5 rounded-2xl shadow-soft">
           <p className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Valid Until</p>
-          <p className="text-lg font-bold text-gray-900">Dec 31, 2025</p>
+          <p className="text-lg font-bold text-gray-900">Dec 31, 2026</p>
         </div>
         <div className="bg-white p-5 rounded-2xl shadow-soft">
           <p className="text-gray-500 text-xs uppercase tracking-wider font-semibold mb-1">Location</p>

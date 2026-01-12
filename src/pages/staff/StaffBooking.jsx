@@ -7,7 +7,7 @@ import { ApplePayLogo, GooglePayLogo, VisaLogo, MastercardLogo, PayPalLogo, Waiv
 
 // Initial mock data if storage is empty
 const INITIAL_BOOKINGS = [
-  { id: 1, location: 'Location A', spot: 'A-05', date: 'Dec 25, 2025', time: '10:00 AM', duration: '2h' },
+  { id: 1, location: 'Location A', spot: 'A-05', date: 'Dec 25, 2026', time: '10:00 AM', duration: '2h' },
 ];
 
 export default function StaffBooking() {
