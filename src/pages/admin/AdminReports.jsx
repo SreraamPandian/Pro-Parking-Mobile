@@ -4,18 +4,48 @@ import { ApplePayLogo, GooglePayLogo, VisaLogo, MastercardLogo } from '../../com
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
-// Mock Data
-// Mock Data with Dates
+// Mock Data with Dates - Comprehensive data for all filters
+// Assuming today is 2026-01-12
 const transactions = [
-  { id: 1, method: 'Apple Pay', amount: '12.50', time: '2:30 PM', date: '2026-01-08', vehicle: 'ABC-1234', dept: 'Visitor', status: 'success' },
-  { id: 2, method: 'Cash', amount: '8.00', time: '2:15 PM', date: '2026-01-08', vehicle: 'XYZ-9876', dept: 'Staff', status: 'success' },
-  { id: 3, method: 'Visa', amount: '24.00', time: '1:55 PM', date: '2026-01-07', vehicle: 'LMN-4567', dept: 'Visitor', status: 'success' },
-  { id: 4, method: 'Waiver', amount: '0.00', time: '1:30 PM', date: '2026-01-07', vehicle: 'VIP-001', dept: 'VIP', status: 'success' },
-  { id: 5, method: 'Google Pay', amount: '15.50', time: '1:12 PM', date: '2026-01-06', vehicle: 'PQR-1122', dept: 'Visitor', status: 'failed' },
-  { id: 6, method: 'Mastercard', amount: '10.00', time: '12:45 PM', date: '2026-01-05', vehicle: 'STU-9988', dept: 'Visitor', status: 'success' },
-  { id: 7, method: 'Cash', amount: '5.00', time: '12:30 PM', date: '2026-01-04', vehicle: 'JKL-5544', dept: 'Staff', status: 'success' },
-  { id: 8, method: 'Apple Pay', amount: '12.50', time: '11:30 AM', date: '2026-01-03', vehicle: 'ABC-1234', dept: 'Visitor', status: 'success' },
-  { id: 9, method: 'Cash', amount: '8.00', time: '11:15 AM', date: '2026-01-02', vehicle: 'XYZ-9876', dept: 'Staff', status: 'success' },
+  // Today (2026-01-12) - All payment methods including Card
+  { id: 1, method: 'Apple Pay', amount: '12.50', time: '2:30 PM', date: '2026-01-12', vehicle: 'ABC-1234', dept: 'Visitor', status: 'success' },
+  { id: 2, method: 'Cash', amount: '8.00', time: '2:15 PM', date: '2026-01-12', vehicle: 'XYZ-9876', dept: 'Staff', status: 'success' },
+  { id: 3, method: 'Visa', amount: '24.00', time: '1:55 PM', date: '2026-01-12', vehicle: 'LMN-4567', dept: 'Visitor', status: 'success' },
+  { id: 4, method: 'Google Pay', amount: '15.50', time: '11:30 AM', date: '2026-01-12', vehicle: 'PQR-1122', dept: 'Visitor', status: 'success' },
+  { id: 5, method: 'Mastercard', amount: '10.00', time: '10:45 AM', date: '2026-01-12', vehicle: 'STU-9988', dept: 'Visitor', status: 'success' },
+  { id: 6, method: 'Waiver', amount: '0.00', time: '10:00 AM', date: '2026-01-12', vehicle: 'VIP-100', dept: 'VIP', status: 'success' },
+  { id: 7, method: 'Card', amount: '18.00', time: '9:30 AM', date: '2026-01-12', vehicle: 'DEF-5678', dept: 'Visitor', status: 'success' },
+
+  // Yesterday (2026-01-11) - Mixed methods and departments
+  { id: 8, method: 'Cash', amount: '5.00', time: '4:30 PM', date: '2026-01-11', vehicle: 'JKL-5544', dept: 'Staff', status: 'success' },
+  { id: 9, method: 'Apple Pay', amount: '18.00', time: '3:15 PM', date: '2026-01-11', vehicle: 'MNO-7788', dept: 'Visitor', status: 'success' },
+  { id: 10, method: 'Waiver', amount: '0.00', time: '2:00 PM', date: '2026-01-11', vehicle: 'VIP-001', dept: 'VIP', status: 'success' },
+  { id: 11, method: 'Visa', amount: '22.00', time: '12:30 PM', date: '2026-01-11', vehicle: 'DEF-3344', dept: 'Visitor', status: 'success' },
+  { id: 12, method: 'Google Pay', amount: '14.00', time: '11:00 AM', date: '2026-01-11', vehicle: 'GHI-6677', dept: 'Staff', status: 'success' },
+  { id: 13, method: 'Mastercard', amount: '16.00', time: '10:15 AM', date: '2026-01-11', vehicle: 'JKL-8899', dept: 'Visitor', status: 'success' },
+  { id: 14, method: 'Card', amount: '20.00', time: '9:00 AM', date: '2026-01-11', vehicle: 'QRS-1234', dept: 'Staff', status: 'success' },
+
+  // This Week (2026-01-06 to 2026-01-10) - All departments
+  { id: 15, method: 'Google Pay', amount: '14.50', time: '5:00 PM', date: '2026-01-10', vehicle: 'GHI-6677', dept: 'Visitor', status: 'success' },
+  { id: 16, method: 'Cash', amount: '7.00', time: '3:45 PM', date: '2026-01-10', vehicle: 'TUV-2233', dept: 'Staff', status: 'success' },
+  { id: 17, method: 'Mastercard', amount: '20.00', time: '1:20 PM', date: '2026-01-09', vehicle: 'WXY-4455', dept: 'Visitor', status: 'success' },
+  { id: 18, method: 'Apple Pay', amount: '16.00', time: '11:00 AM', date: '2026-01-09', vehicle: 'ZAB-6688', dept: 'Visitor', status: 'success' },
+  { id: 19, method: 'Waiver', amount: '0.00', time: '10:30 AM', date: '2026-01-09', vehicle: 'VIP-200', dept: 'VIP', status: 'success' },
+  { id: 20, method: 'Cash', amount: '6.50', time: '4:15 PM', date: '2026-01-08', vehicle: 'CDE-9900', dept: 'Staff', status: 'success' },
+  { id: 21, method: 'Visa', amount: '25.00', time: '2:30 PM', date: '2026-01-08', vehicle: 'FGH-1122', dept: 'Visitor', status: 'success' },
+  { id: 22, method: 'Google Pay', amount: '13.00', time: '10:15 AM', date: '2026-01-07', vehicle: 'IJK-3344', dept: 'Visitor', status: 'success' },
+  { id: 23, method: 'Cash', amount: '9.00', time: '3:00 PM', date: '2026-01-06', vehicle: 'LMN-5566', dept: 'Staff', status: 'success' },
+  { id: 24, method: 'Mastercard', amount: '12.00', time: '1:45 PM', date: '2026-01-06', vehicle: 'NOP-7788', dept: 'Visitor', status: 'success' },
+  { id: 25, method: 'Card', amount: '15.00', time: '11:30 AM', date: '2026-01-07', vehicle: 'TUV-9999', dept: 'VIP', status: 'success' },
+
+  // Earlier dates (before this week) - All methods
+  { id: 26, method: 'Apple Pay', amount: '11.50', time: '2:45 PM', date: '2026-01-05', vehicle: 'OPQ-7788', dept: 'Visitor', status: 'success' },
+  { id: 27, method: 'Mastercard', amount: '19.00', time: '1:30 PM', date: '2026-01-04', vehicle: 'RST-9900', dept: 'Visitor', status: 'success' },
+  { id: 28, method: 'Cash', amount: '8.50', time: '11:45 AM', date: '2026-01-03', vehicle: 'UVW-1122', dept: 'Staff', status: 'success' },
+  { id: 29, method: 'Visa', amount: '23.00', time: '4:00 PM', date: '2026-01-02', vehicle: 'XYZ-3344', dept: 'Visitor', status: 'success' },
+  { id: 30, method: 'Google Pay', amount: '17.50', time: '2:15 PM', date: '2026-01-01', vehicle: 'ABC-5566', dept: 'Visitor', status: 'failed' },
+  { id: 31, method: 'Waiver', amount: '0.00', time: '12:00 PM', date: '2026-01-01', vehicle: 'VIP-300', dept: 'VIP', status: 'success' },
+  { id: 32, method: 'Card', amount: '21.00', time: '10:00 AM', date: '2026-01-03', vehicle: 'WXY-7777', dept: 'Visitor', status: 'success' },
 ];
 
 const FilterDropdown = ({ label, active, options, onSelect }) => {
@@ -92,17 +122,17 @@ export default function AdminReports() {
     if (deptFilter !== 'All' && tx.dept !== deptFilter) return false;
 
     // 3. Date Filter Logic
-    const today = new Date('2026-01-08'); // Reference date
+    const today = new Date('2026-01-12'); // Reference date (current date)
     const txDate = new Date(tx.date);
 
     if (dateFilter === 'Today') {
-      if (tx.date !== '2026-01-08') return false;
+      if (tx.date !== '2026-01-12') return false;
     } else if (dateFilter === 'Yesterday') {
-      if (tx.date !== '2026-01-07') return false;
+      if (tx.date !== '2026-01-11') return false;
     } else if (dateFilter === 'This Week') {
-      const lastWeek = new Date(today);
-      lastWeek.setDate(today.getDate() - 7);
-      if (txDate < lastWeek || txDate > today) return false;
+      // This week starts from Monday 2026-01-06
+      const weekStart = new Date('2026-01-06');
+      if (txDate < weekStart || txDate > today) return false;
     } else if (dateFilter === 'Custom Range') {
       if (!customRange.start || !customRange.end) return true;
       const start = new Date(customRange.start);
@@ -124,6 +154,8 @@ export default function AdminReports() {
     if (method === 'Visa') return <VisaLogo className="h-3 w-auto fill-brand-900" />;
     if (method === 'Mastercard') return <MastercardLogo className="h-3 w-auto" />;
     if (method === 'Cash') return <Banknote size={20} className="text-green-600" />;
+    if (method === 'Card') return <CreditCard size={20} className="text-blue-600" />;
+    if (method === 'Waiver') return <CreditCard size={20} className="text-gray-400" />;
     return <CreditCard size={20} className="text-gray-600" />;
   };
 

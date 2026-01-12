@@ -1,46 +1,168 @@
 import React, { useState } from 'react';
-import { Search, Clock, Car } from 'lucide-react';
+import { Search, Clock, Car, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 
-const cars = [
-  { id: 1, plate: 'ABC-1234', entry: '08:30 AM', duration: '2h 15m', location: 'Area A-12', status: 'active' },
-  { id: 2, plate: 'XYZ-9876', entry: '09:15 AM', duration: '45m', location: 'Area B-05', status: 'active' },
-  { id: 3, plate: 'LMN-4567', entry: '05:00 AM', duration: '5h 30m', location: 'Area A-08', status: 'overdue' },
-  { id: 4, plate: 'PQR-1122', entry: '10:00 AM', duration: '10m', location: 'Area C-01', status: 'active' },
-  { id: 5, plate: 'STU-9988', entry: '09:00 AM', duration: '1h 05m', location: 'Area B-11', status: 'active' },
-];
+// Generate location-specific slot data
+const generateSlotsByLocation = (location) => {
+  const baseSlots = [];
+  const statuses = ['occupied', 'reserved', 'available'];
+  const plates = ['ABC-1234', 'XYZ-9876', 'LMN-4567', 'PQR-1122', 'STU-9988', 'JKL-5544', 'MNO-7788', 'DEF-3344'];
+
+  // Different distributions for each location
+  const distributions = {
+    'A': { occupied: 24, reserved: 10, available: 16 },
+    'B': { occupied: 28, reserved: 7, available: 15 },
+    'C': { occupied: 20, reserved: 12, available: 18 }
+  };
+
+  const dist = distributions[location];
+  let slotIndex = 1;
+
+  // Add occupied slots
+  for (let i = 0; i < dist.occupied; i++) {
+    baseSlots.push({
+      id: slotIndex,
+      slotNumber: `${location}-${String(slotIndex).padStart(2, '0')}`,
+      plate: plates[i % plates.length],
+      entry: `${8 + (i % 4)}:${(i % 6) * 10} AM`,
+      duration: `${Math.floor(i / 10)}h ${(i % 6) * 10}m`,
+      status: 'occupied'
+    });
+    slotIndex++;
+  }
+
+  // Add reserved slots
+  for (let i = 0; i < dist.reserved; i++) {
+    baseSlots.push({
+      id: slotIndex,
+      slotNumber: `${location}-${String(slotIndex).padStart(2, '0')}`,
+      plate: plates[i % plates.length],
+      entry: `${9 + (i % 3)}:${(i % 4) * 15} AM`,
+      duration: `${Math.floor(i / 8)}h ${(i % 4) * 15}m`,
+      status: 'reserved'
+    });
+    slotIndex++;
+  }
+
+  // Add available slots
+  for (let i = 0; i < dist.available; i++) {
+    baseSlots.push({
+      id: slotIndex,
+      slotNumber: `${location}-${String(slotIndex).padStart(2, '0')}`,
+      plate: null,
+      entry: null,
+      duration: null,
+      status: 'available'
+    });
+    slotIndex++;
+  }
+
+  return baseSlots;
+};
 
 export default function AdminLiveView() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedLocation, setSelectedLocation] = useState('A');
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const itemsPerPage = 10;
 
-  const filteredCars = cars.filter(car =>
-    car.plate.toLowerCase().includes(searchTerm.toLowerCase())
+  // Get slots for selected location
+  const slots = generateSlotsByLocation(selectedLocation);
+
+  // Location stats
+  const locationStats = {
+    'A': { total: 100, available: 42, reserved: 10, occupied: 48 },
+    'B': { total: 100, available: 35, reserved: 10, occupied: 55 },
+    'C': { total: 100, available: 28, reserved: 12, occupied: 60 }
+  };
+
+  const stats = locationStats[selectedLocation];
+
+  const filteredSlots = slots.filter(slot =>
+    slot.slotNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (slot.plate && slot.plate.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredSlots.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentSlots = filteredSlots.slice(startIndex, endIndex);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const goToPrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
 
   return (
     <div className="p-6 pb-32 space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold text-gray-900">Live Parking</h1>
-        <p className="text-gray-500">Real-time Vehicle Status</p>
-      </header>
+      {/* Header with Location Dropdown */}
+      <div className="flex items-center justify-between">
+        <header>
+          <h1 className="text-2xl font-bold text-gray-900">Live Parking</h1>
+          <p className="text-gray-500">Real-time Vehicle Status</p>
+        </header>
 
-      {/* Summary Stats Cards - Matching Image */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-blue-50/60 p-5 rounded-[2rem] border border-blue-100/40">
-          <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.1em] mb-1">Total Slots</p>
-          <p className="text-3xl font-black text-blue-800">100</p>
+        {/* Location Filter */}
+        <div className="relative">
+          <button
+            onClick={() => setShowLocationDropdown(!showLocationDropdown)}
+            className="bg-brand-900 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-brand-950 transition-colors"
+          >
+            Location {selectedLocation}
+            <ChevronDown size={16} className={`transition-transform ${showLocationDropdown ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showLocationDropdown && (
+            <div className="absolute right-0 mt-2 bg-white rounded-xl shadow-xl overflow-hidden z-50 min-w-[140px]">
+              {['A', 'B', 'C'].map((loc) => (
+                <button
+                  key={loc}
+                  onClick={() => {
+                    setSelectedLocation(loc);
+                    setShowLocationDropdown(false);
+                    setCurrentPage(1); // Reset to page 1 when changing location
+                  }}
+                  className={`w-full px-4 py-2 text-left text-sm font-bold hover:bg-brand-50 transition-colors
+                    ${selectedLocation === loc ? 'bg-brand-100 text-brand-900' : 'text-gray-700'}
+                  `}
+                >
+                  Location {loc}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="bg-green-50/60 p-5 rounded-[2rem] border border-green-100/40">
-          <p className="text-[10px] font-black text-green-500 uppercase tracking-[0.1em] mb-1">Available</p>
-          <p className="text-3xl font-black text-green-800">25</p>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        {/* Total Slots */}
+        <div className="bg-white rounded-2xl p-5 shadow-soft border border-gray-100">
+          <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">Total Slots</p>
+          <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
         </div>
-        <div className="bg-[#FFFBEB] p-5 rounded-[2rem] border border-amber-100/40">
-          <p className="text-[10px] font-black text-[#B45309] uppercase tracking-[0.1em] mb-1">Reserved</p>
-          <p className="text-3xl font-black text-[#92400E]">20</p>
+
+        {/* Available - Green */}
+        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-5 shadow-soft border border-green-200">
+          <p className="text-xs text-green-700 font-bold uppercase tracking-wider mb-2">Available</p>
+          <p className="text-3xl font-bold text-green-900">{stats.available}</p>
         </div>
-        <div className="bg-red-50/60 p-5 rounded-[2rem] border border-red-100/40">
-          <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.1em] mb-1">Occupied</p>
-          <p className="text-3xl font-black text-red-800">55</p>
+
+        {/* Reserved - Sandal/Orange */}
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-5 shadow-soft border border-orange-200">
+          <p className="text-xs text-orange-700 font-bold uppercase tracking-wider mb-2">Reserved</p>
+          <p className="text-3xl font-bold text-orange-900">{stats.reserved}</p>
+        </div>
+
+        {/* Occupied - Red */}
+        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-5 shadow-soft border border-red-200">
+          <p className="text-xs text-red-700 font-bold uppercase tracking-wider mb-2">Occupied</p>
+          <p className="text-3xl font-bold text-red-900">{stats.occupied}</p>
         </div>
       </div>
 
@@ -48,43 +170,105 @@ export default function AdminLiveView() {
         <div className="flex-1">
           <Input
             icon={Search}
-            placeholder="Search license plate..."
+            placeholder="Search slot or license plate..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        {/* Filter button removed as requested */}
       </div>
 
+      {/* Slot List with Color Coding */}
       <div className="space-y-3">
-        {filteredCars.map((car) => (
-          <div key={car.id} className="bg-white p-4 rounded-2xl shadow-soft flex items-center justify-between group">
+        {currentSlots.map((slot) => (
+          <div
+            key={slot.id}
+            className={`p-4 rounded-2xl shadow-soft flex items-center justify-between group border-2
+              ${slot.status === 'occupied' ? 'bg-gradient-to-r from-red-50 to-red-100 border-red-200' : ''}
+              ${slot.status === 'reserved' ? 'bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200' : ''}
+              ${slot.status === 'available' ? 'bg-white border-gray-100' : ''}
+            `}
+          >
             <div className="flex items-center gap-4">
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors
-                ${car.status === 'overdue' ? 'bg-red-50 text-red-600' : 'bg-gray-50 text-gray-400 group-hover:bg-brand-50 group-hover:text-brand-600'}`}>
+                ${slot.status === 'occupied' ? 'bg-red-200 text-red-700' : ''}
+                ${slot.status === 'reserved' ? 'bg-orange-200 text-orange-700' : ''}
+                ${slot.status === 'available' ? 'bg-gray-50 text-gray-400' : ''}
+              `}>
                 <Car size={24} />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900 text-lg">{car.plate}</h3>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <span>Entry: {car.entry}</span>
-                  <span>•</span>
-                  <span className="font-medium text-brand-600">{car.location}</span>
-                </div>
+                <h3 className="font-bold text-gray-900 text-lg">{slot.slotNumber}</h3>
+                {slot.plate ? (
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <span className="font-bold">{slot.plate}</span>
+                    <span>•</span>
+                    <span>Entry: {slot.entry}</span>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400">Empty Slot</p>
+                )}
               </div>
             </div>
             <div className="text-right">
-              <div className="flex items-center gap-1 justify-end text-sm font-bold text-gray-900">
-                <Clock size={14} className="text-gray-400" />
-                {car.duration}
-              </div>
-              <p className={`text-xs font-bold mt-1 ${car.status === 'overdue' ? 'text-red-500' : 'text-green-500'}`}>
-                {car.status === 'overdue' ? 'Overdue' : 'Active'}
+              {slot.duration && (
+                <div className="flex items-center gap-1 justify-end text-sm font-bold text-gray-900">
+                  <Clock size={14} className="text-gray-400" />
+                  {slot.duration}
+                </div>
+              )}
+              <p className={`text-xs font-bold mt-1 uppercase tracking-wider
+                ${slot.status === 'occupied' ? 'text-red-600' : ''}
+                ${slot.status === 'reserved' ? 'text-orange-600' : ''}
+                ${slot.status === 'available' ? 'text-green-600' : ''}
+              `}>
+                {slot.status}
               </p>
             </div>
           </div>
         ))}
       </div>
+
+      {/* Pagination Controls - Improved Text Spacing */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-soft">
+          <button
+            onClick={goToPrevPage}
+            disabled={currentPage === 1}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all
+              ${currentPage === 1
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-brand-900 text-white hover:bg-brand-950 active:scale-95'
+              }
+            `}
+          >
+            <ChevronLeft size={20} />
+            Previous
+          </button>
+
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-sm font-bold text-gray-900">
+              Page {currentPage} of {totalPages}
+            </span>
+            <span className="text-xs text-gray-500">
+              ({startIndex + 1}-{Math.min(endIndex, filteredSlots.length)} of {filteredSlots.length})
+            </span>
+          </div>
+
+          <button
+            onClick={goToNextPage}
+            disabled={currentPage === totalPages}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition-all
+              ${currentPage === totalPages
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-brand-900 text-white hover:bg-brand-950 active:scale-95'
+              }
+            `}
+          >
+            Next
+            <ChevronRight size={20} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }

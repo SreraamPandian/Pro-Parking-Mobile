@@ -27,12 +27,12 @@ export default function AdminSettings() {
             className="space-y-8"
           >
             <header>
-              <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Profile</h1>
               <p className="text-gray-500">Manage your profile</p>
             </header>
 
             <div className="flex items-center gap-4">
-              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop&q=60" alt="Profile" className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg" />
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRX0v92XEuKpPKzmaKuMKpaZmHix6v6NSWNA&s" alt="Profile" className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-white" />
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Admin User</h2>
                 <p className="text-gray-500">Manager Role</p>

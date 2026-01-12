@@ -1,16 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { ScanLine, FileText } from 'lucide-react';
+import { ScanLine, FileText, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const data = [
-  { name: 'Occupied', value: 85, color: '#0c4a6e' }, // brand-900
-  { name: 'Reserved', value: 15, color: '#38bdf8' }, // brand-400
-  { name: 'Available', value: 20, color: '#f1f5f9' }, // slate-100
-];
+// Location-specific data
+const locationData = {
+  'A': { available: 42, occupied: 48, reserved: 10, total: 100 },
+  'B': { available: 35, occupied: 55, reserved: 10, total: 100 },
+  'C': { available: 28, occupied: 60, reserved: 12, total: 100 },
+};
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [selectedLocation, setSelectedLocation] = useState('A');
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+
+  const currentData = locationData[selectedLocation];
+  const occupiedPercentage = (currentData.occupied / currentData.total) * 100;
+  const reservedPercentage = (currentData.reserved / currentData.total) * 100;
+  const availablePercentage = (currentData.available / currentData.total) * 100;
+  const totalOccupancyPercentage = ((currentData.occupied + currentData.reserved) / currentData.total) * 100;
+
+
+  const data = [
+    { name: 'Occupied', value: currentData.occupied, color: '#0c4a6e' }, // brand-900
+    { name: 'Reserved', value: currentData.reserved, color: '#38bdf8' }, // brand-400
+    { name: 'Available', value: currentData.available, color: '#f1f5f9' }, // slate-100
+  ];
 
   return (
     <div className="p-6 pb-32 space-y-8 overflow-x-hidden">
@@ -20,9 +36,12 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-500 font-medium">Overview & Quick Actions</p>
         </div>
-        <div className="w-10 h-10 bg-gray-100 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
-           <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&auto=format&fit=crop&q=60" alt="Admin" className="w-full h-full object-cover" />
-        </div>
+        <button
+          onClick={() => navigate('/admin/settings')}
+          className="w-16 h-16 bg-white rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0 hover:scale-105 transition-transform active:scale-95"
+        >
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRX0v92XEuKpPKzmaKuMKpaZmHix6v6NSWNA&s" alt="Admin" className="w-full h-full object-cover" />
+        </button>
       </header>
 
       {/* Main Metric - Location Specific */}
@@ -31,22 +50,51 @@ export default function AdminDashboard() {
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-2">
             <p className="text-brand-200 font-medium uppercase tracking-wider text-xs">Available Slots</p>
-            <span className="bg-white/20 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">Location A</span>
+
+            {/* Location Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowLocationDropdown(!showLocationDropdown)}
+                className="bg-white/20 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 hover:bg-white/30 transition-colors"
+              >
+                Location {selectedLocation}
+                <ChevronDown size={12} className={`transition-transform ${showLocationDropdown ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showLocationDropdown && (
+                <div className="absolute right-0 mt-2 bg-white rounded-xl shadow-xl overflow-hidden z-50 min-w-[120px]">
+                  {Object.keys(locationData).map((loc) => (
+                    <button
+                      key={loc}
+                      onClick={() => {
+                        setSelectedLocation(loc);
+                        setShowLocationDropdown(false);
+                      }}
+                      className={`w-full px-4 py-2 text-left text-sm font-bold hover:bg-brand-50 transition-colors
+                        ${selectedLocation === loc ? 'bg-brand-100 text-brand-900' : 'text-gray-700'}
+                      `}
+                    >
+                      Location {loc}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-          
+
           <div className="flex items-baseline gap-2 mb-8">
-            <h2 className="text-7xl font-bold tracking-tighter">42</h2>
-            <span className="text-brand-400 text-2xl font-medium">/ 100</span>
+            <h2 className="text-7xl font-bold tracking-tighter">{currentData.available}</h2>
+            <span className="text-brand-400 text-2xl font-medium">/ {currentData.total}</span>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
               <p className="text-brand-200 text-[10px] uppercase tracking-wider font-bold mb-1">Occupied</p>
-              <p className="text-2xl font-bold">48</p>
+              <p className="text-2xl font-bold">{currentData.occupied}</p>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
               <p className="text-brand-200 text-[10px] uppercase tracking-wider font-bold mb-1">Reserved</p>
-              <p className="text-2xl font-bold">10</p>
+              <p className="text-2xl font-bold">{currentData.reserved}</p>
             </div>
           </div>
         </div>
@@ -56,7 +104,7 @@ export default function AdminDashboard() {
       <div>
         <h3 className="font-bold text-gray-900 mb-4 text-lg">Quick Actions</h3>
         <div className="grid grid-cols-2 gap-4">
-          <button 
+          <button
             onClick={() => navigate('/admin/scanner')}
             className="bg-white p-5 rounded-3xl shadow-soft flex flex-col items-center gap-3 hover:shadow-lg transition-all active:scale-95 border border-gray-100"
           >
@@ -65,7 +113,7 @@ export default function AdminDashboard() {
             </div>
             <span className="font-bold text-gray-700">Scan & Verify</span>
           </button>
-          <button 
+          <button
             onClick={() => navigate('/admin/transactions')}
             className="bg-white p-5 rounded-3xl shadow-soft flex flex-col items-center gap-3 hover:shadow-lg transition-all active:scale-95 border border-gray-100"
           >
@@ -80,16 +128,16 @@ export default function AdminDashboard() {
       {/* Live Occupancy */}
       <div className="bg-white p-6 rounded-[2.5rem] shadow-soft border border-gray-100 overflow-hidden">
         <div className="flex justify-between items-center mb-6">
-            <div>
-              <h3 className="font-bold text-gray-900 text-lg">Live Occupancy</h3>
-              <p className="text-gray-400 text-sm">Real-time status</p>
-            </div>
-            <span className="flex items-center gap-2 text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-bold">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              Live
-            </span>
+          <div>
+            <h3 className="font-bold text-gray-900 text-lg">Live Occupancy</h3>
+            <p className="text-gray-400 text-sm">Real-time status</p>
+          </div>
+          <span className="flex items-center gap-2 text-xs bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-bold">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            Live
+          </span>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row items-center gap-6">
           <div className="w-40 h-40 relative flex-shrink-0">
             <ResponsiveContainer width="100%" height="100%">
@@ -108,7 +156,7 @@ export default function AdminDashboard() {
                   paddingAngle={5}
                 >
                   {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell key={`cell - ${index} `} fill={entry.color} />
                   ))}
                 </Pie>
               </PieChart>

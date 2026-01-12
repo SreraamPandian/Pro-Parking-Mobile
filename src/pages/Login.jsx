@@ -24,11 +24,7 @@ export default function Login() {
 
   const handleVerifyOtp = (e) => {
     e.preventDefault();
-    if (mode === 'staff') {
-      navigate('/staff/home');
-    } else {
-      navigate('/visitor/home');
-    }
+    navigate('/visitor/home');
   };
 
   const handleAdminLogin = (e) => {
@@ -72,26 +68,20 @@ export default function Login() {
           layout
           className="bg-white rounded-[2rem] shadow-xl shadow-brand-900/10 p-8 mb-auto"
         >
-          {/* 3-Way Toggle */}
+          {/* 2-Way Toggle - Visitor and Admin Only */}
           <div className="flex justify-center mb-8">
             <div className="bg-gray-100 p-1 rounded-xl flex w-full">
               <button
                 onClick={() => switchMode('visitor')}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${mode === 'visitor' ? 'bg-white text-brand-900 shadow-sm' : 'text-gray-500'}`}
+                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${mode === 'visitor' ? 'bg-white text-brand-900 shadow-sm' : 'text-gray-500'}`}
               >
                 Visitor
               </button>
               <button
-                onClick={() => switchMode('staff')}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${mode === 'staff' ? 'bg-white text-brand-900 shadow-sm' : 'text-gray-500'}`}
+                onClick={() => switchMode('admin')}
+                className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${mode === 'admin' ? 'bg-white text-brand-900 shadow-sm' : 'text-gray-500'}`}
               >
                 Staff
-              </button>
-              <button
-                onClick={() => switchMode('admin')}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${mode === 'admin' ? 'bg-white text-brand-900 shadow-sm' : 'text-gray-500'}`}
-              >
-                Admin
               </button>
             </div>
           </div>
@@ -158,21 +148,21 @@ export default function Login() {
                         <input
                           className="w-full bg-white border border-gray-200 text-gray-900 rounded-2xl py-4 pl-20 pr-4 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all shadow-sm placeholder:text-gray-400 font-medium tracking-wide"
                           type="tel"
-                          placeholder="555-0123"
+                          placeholder="555-012-3456"
                           value={adminForgotContact}
-                          maxLength={7}
+                          maxLength={10}
                           onChange={(e) => {
                             const val = e.target.value.replace(/\D/g, '');
-                            if (val.length <= 7) setAdminForgotContact(val);
+                            if (val.length <= 10) setAdminForgotContact(val);
                           }}
                           required
                         />
                       </div>
-                      <p className="text-xs text-gray-400 ml-1">Enter 7 digits (US Format)</p>
+                      <p className="text-xs text-gray-400 ml-1">Enter 7-10 digits (US Format)</p>
                     </div>
 
                     <Button
-                      disabled={adminForgotContact.length < 7}
+                      disabled={adminForgotContact.length < 7 || adminForgotContact.length > 10}
                       onClick={() => setAdminStep('forgot-otp')}
                       className="mt-4"
                     >
@@ -266,17 +256,17 @@ export default function Login() {
                         <input
                           className="w-full bg-white border border-gray-200 text-gray-900 rounded-2xl py-4 pl-20 pr-4 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all shadow-sm placeholder:text-gray-400 font-medium tracking-wide"
                           type="tel"
-                          placeholder="555-0123"
+                          placeholder="555-012-3456"
                           value={mobile}
-                          maxLength={7}
+                          maxLength={10}
                           onChange={(e) => {
                             const val = e.target.value.replace(/\D/g, '');
-                            if (val.length <= 7) setMobile(val);
+                            if (val.length <= 10) setMobile(val);
                           }}
                           required
                         />
                       </div>
-                      <p className="text-xs text-gray-400 ml-1">Enter 7 digits (US Format)</p>
+                      <p className="text-xs text-gray-400 ml-1">Enter 7-10 digits (US Format)</p>
                     </div>
 
                     <Button type="submit" className="mt-4">

@@ -8,9 +8,23 @@ export default function StaffProfile() {
   const { type } = useOutletContext();
   const [showDetails, setShowDetails] = useState(false);
 
+  // Portal-specific profile data
+  const isStaff = type === 'staff';
+  const profileData = isStaff
+    ? {
+      name: 'Sriram Xander',
+      email: 'sarah.mitchell@company.com',
+      image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQF2yaox2cALIq_yyd-9qEyovEsficJr7X9QQ&s'
+    }
+    : {
+      name: 'Sriram Xander',
+      email: 'sriramxander@company.com',
+      image: 'https://static.vecteezy.com/system/resources/thumbnails/058/270/883/small/confident-young-man-posing-with-crossed-arms-in-casual-denim-shirt-png.png'
+    };
+
   // New State for Editable Details
-  const [name, setName] = useState('Alex Johnson');
-  const [email, setEmail] = useState('alex.j@company.com');
+  const [name, setName] = useState(profileData.name);
+  const [email, setEmail] = useState(profileData.email);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
 
@@ -26,7 +40,7 @@ export default function StaffProfile() {
       </header>
 
       <div className="flex items-center gap-4">
-        <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&auto=format&fit=crop&q=60" alt="Profile" className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg" />
+        <img src={profileData.image} alt="Profile" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg bg-white" />
         <div>
           <h2 className="text-xl font-bold text-gray-900">{name}</h2>
           <p className="text-gray-500">{email}</p>

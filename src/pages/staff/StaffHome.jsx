@@ -11,6 +11,19 @@ export default function StaffHome() {
 
   const [hasUnread, setHasUnread] = useState(false);
 
+  // Portal-specific profile data
+  const profileData = isStaff
+    ? {
+      name: 'Sriram Xander',
+      initials: 'SM',
+      image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQF2yaox2cALIq_yyd-9qEyovEsficJr7X9QQ&s'
+    }
+    : {
+      name: 'Sriram Xander',
+      initials: 'MC',
+      image: 'https://static.vecteezy.com/system/resources/thumbnails/058/270/883/small/confident-young-man-posing-with-crossed-arms-in-casual-denim-shirt-png.png'
+    };
+
   useEffect(() => {
     const checkUnread = () => {
       const saved = localStorage.getItem('pro_parking_notifications');
@@ -42,9 +55,12 @@ export default function StaffHome() {
               <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
             )}
           </button>
-          <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center text-brand-700 font-bold">
-            AJ
-          </div>
+          <button
+            onClick={() => navigate(`${basePath}/profile`)}
+            className="w-16 h-16 bg-white rounded-full flex items-center justify-center overflow-hidden border-2 border-white shadow-sm hover:scale-105 transition-transform active:scale-95"
+          >
+            <img src={profileData.image} alt={profileData.name} className="w-full h-full object-cover" />
+          </button>
         </div>
       </header>
 
@@ -64,13 +80,13 @@ export default function StaffHome() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold">Alex Johnson</h2>
-            {/* Only show ID for Staff */}
-            {isStaff ? (
-              <p className="text-brand-200">Staff Member • ID #8829</p>
-            ) : (
-              <p className="text-brand-200">Visitor</p>
-            )}
+            <h2 className="text-2xl font-bold">{isStaff ? 'Sriram Xander' : 'Sriram Xander'}</h2>
+            {/* Show ID for both Staff and Visitor - Multi-line format */}
+            <div className="text-brand-200 text-sm">
+              <p>Visitor</p>
+              <p>OR</p>
+              <p>Staff Member • ID</p>
+            </div>
           </div>
 
           <div className="bg-white p-4 rounded-2xl shadow-lg">

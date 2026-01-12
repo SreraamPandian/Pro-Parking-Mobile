@@ -15,14 +15,15 @@ import StaffNotifications from './pages/staff/StaffNotifications';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminLiveView from './pages/admin/AdminLiveView';
 import AdminReports from './pages/admin/AdminReports';
+import AdminBoomBarrier from './pages/admin/AdminBoomBarrier';
 import AdminSettings from './pages/admin/AdminSettings';
 import AdminScanner from './pages/admin/AdminScanner';
-import AdminTransactions from './pages/admin/AdminTransactions'; // New Import
+import AdminTransactions from './pages/admin/AdminTransactions';
 
 // Components
 import { BottomNav } from './components/layout/BottomNav';
-import { Home, Car, User, LayoutDashboard, List, FileText, Settings, MapPin, ScanLine } from 'lucide-react';
 import { NotificationToast } from './components/ui/NotificationToast';
+import { Home, Car, User, LayoutDashboard, List, FileText, ShieldAlert, MapPin, ScanLine } from 'lucide-react';
 
 // Layout for Visitor and Staff
 const UserLayout = ({ type }) => {
@@ -119,8 +120,8 @@ const AdminLayout = () => {
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
     { icon: List, label: 'Live View', path: '/admin/live-view' },
-    { icon: FileText, label: 'Reports', path: '/admin/reports' }, // Kept as Reports for Nav
-    { icon: Settings, label: 'Settings', path: '/admin/settings' },
+    { icon: FileText, label: 'Reports', path: '/admin/reports' },
+    { icon: ShieldAlert, label: 'Barrier', path: '/admin/barrier' },
   ];
 
   return (
@@ -148,25 +149,15 @@ function App() {
           <Route path="notifications" element={<StaffNotifications />} />
         </Route>
 
-        {/* Staff Routes (New 3rd Portal) */}
-        <Route path="/staff" element={<UserLayout type="staff" />}>
-          <Route path="home" element={<StaffHome />} />
-          <Route path="vehicles" element={<StaffVehicles />} />
-          <Route path="profile" element={<StaffProfile />} />
-          <Route path="booking" element={<StaffBooking />} />
-          <Route path="payment" element={<StaffPayment />} />
-          <Route path="history" element={<StaffHistory />} />
-          <Route path="notifications" element={<StaffNotifications />} />
-        </Route>
-
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="live-view" element={<AdminLiveView />} />
           <Route path="reports" element={<AdminReports />} />
-          <Route path="transactions" element={<AdminTransactions />} /> {/* New Route */}
+          <Route path="barrier" element={<AdminBoomBarrier />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="scanner" element={<AdminScanner />} />
+          <Route path="transactions" element={<AdminTransactions />} />
         </Route>
 
         {/* Fallback */}
