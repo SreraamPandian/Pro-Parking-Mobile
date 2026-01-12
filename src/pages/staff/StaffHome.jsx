@@ -14,12 +14,12 @@ export default function StaffHome() {
   // Portal-specific profile data
   const profileData = isStaff
     ? {
-      name: 'Sriram Xander',
+      name: 'Aiyana Redfeather',
       initials: 'SM',
       image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQF2yaox2cALIq_yyd-9qEyovEsficJr7X9QQ&s'
     }
     : {
-      name: 'Sriram Xander',
+      name: 'Aiyana Redfeather',
       initials: 'MC',
       image: 'https://static.vecteezy.com/system/resources/thumbnails/058/270/883/small/confident-young-man-posing-with-crossed-arms-in-casual-denim-shirt-png.png'
     };
@@ -80,7 +80,7 @@ export default function StaffHome() {
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold">{isStaff ? 'Sriram Xander' : 'Sriram Xander'}</h2>
+            <h2 className="text-2xl font-bold">{isStaff ? 'Aiyana Redfeather' : 'Aiyana Redfeather'}</h2>
             {/* Show ID for both Staff and Visitor - Multi-line format */}
             <div className="text-brand-200 text-sm">
               <p>Visitor</p>

@@ -15,13 +15,13 @@ export default function StaffProfile() {
   const isStaff = type === 'staff';
   const profileData = isStaff
     ? {
-      name: 'Sriram Xander',
+      name: 'Aiyana Redfeather',
       email: 'sarah.mitchell@company.com',
       image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQF2yaox2cALIq_yyd-9qEyovEsficJr7X9QQ&s'
     }
     : {
-      name: 'Sriram Xander',
-      email: 'sriramxander@company.com',
+      name: 'Aiyana Redfeather',
+      email: 'aiyanaredfeather@company.com',
       image: 'https://static.vecteezy.com/system/resources/thumbnails/058/270/883/small/confident-young-man-posing-with-crossed-arms-in-casual-denim-shirt-png.png'
     };
 
