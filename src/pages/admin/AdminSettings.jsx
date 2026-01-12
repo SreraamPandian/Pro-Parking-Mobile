@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { User, LogOut, ChevronRight, Mail, Phone, Shield } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { User, LogOut, ChevronRight, Mail, Phone, Shield, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -7,6 +7,8 @@ export default function AdminSettings() {
   const navigate = useNavigate();
   const [view, setView] = useState('settings'); // 'settings', 'change-password'
   const [showDetails, setShowDetails] = useState(false);
+  const fileInputRef = useRef(null);
+  const [profileImage, setProfileImage] = useState('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRX0v92XEuKpPKzmaKuMKpaZmHix6v6NSWNA&s');
 
   // Change Password State
   const [oldPassword, setOldPassword] = useState('');
@@ -14,6 +16,18 @@ export default function AdminSettings() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isChanging, setIsChanging] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Handle profile photo upload
+  const handlePhotoUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <div className="p-6 pb-32 space-y-8">
@@ -32,7 +46,22 @@ export default function AdminSettings() {
             </header>
 
             <div className="flex items-center gap-4">
-              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRX0v92XEuKpPKzmaKuMKpaZmHix6v6NSWNA&s" alt="Profile" className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-white" />
+              <div className="relative">
+                <img src={profileImage} alt="Profile" className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-lg bg-white" />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 w-7 h-7 bg-brand-900 rounded-full flex items-center justify-center shadow-lg hover:bg-brand-950 transition-colors"
+                >
+                  <Camera size={14} className="text-white" />
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  className="hidden"
+                />
+              </div>
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Admin User</h2>
                 <p className="text-gray-500">Manager Role</p>

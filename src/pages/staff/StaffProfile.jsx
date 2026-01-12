@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { User, LogOut, History, ChevronRight, Mail, Phone, Shield } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { User, LogOut, History, ChevronRight, Mail, Phone, Shield, Camera } from 'lucide-react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -7,6 +7,7 @@ export default function StaffProfile() {
   const navigate = useNavigate();
   const { type } = useOutletContext();
   const [showDetails, setShowDetails] = useState(false);
+  const fileInputRef = useRef(null);
 
   // Portal-specific profile data
   const isStaff = type === 'staff';
@@ -25,8 +26,21 @@ export default function StaffProfile() {
   // New State for Editable Details
   const [name, setName] = useState(profileData.name);
   const [email, setEmail] = useState(profileData.email);
+  const [profileImage, setProfileImage] = useState(profileData.image);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
+
+  // Handle profile photo upload
+  const handlePhotoUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Filtered menu items as requested
   const menuItems = [
@@ -40,7 +54,22 @@ export default function StaffProfile() {
       </header>
 
       <div className="flex items-center gap-4">
-        <img src={profileData.image} alt="Profile" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg bg-white" />
+        <div className="relative">
+          <img src={profileImage} alt="Profile" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg bg-white" />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute bottom-0 right-0 w-8 h-8 bg-brand-900 rounded-full flex items-center justify-center shadow-lg hover:bg-brand-950 transition-colors"
+          >
+            <Camera size={16} className="text-white" />
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoUpload}
+            className="hidden"
+          />
+        </div>
         <div>
           <h2 className="text-xl font-bold text-gray-900">{name}</h2>
           <p className="text-gray-500">{email}</p>

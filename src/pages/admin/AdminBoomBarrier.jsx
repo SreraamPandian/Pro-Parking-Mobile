@@ -1,101 +1,73 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowLeft, ShieldAlert, ShieldCheck, Loader2, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    ArrowLeft,
+    MapPin,
+    Power,
+    Clock,
+    CheckCircle2,
+    AlertTriangle,
+    ChevronDown
+} from 'lucide-react';
+
+// --- Data Configuration ---
+const barriersByLocation = {
+    'A': [
+        { id: 1, name: 'Entry Barrier', location: 'Section A - North', status: 'closed', progress: 0 },
+        { id: 2, name: 'Exit Barrier', location: 'Section A - South', status: 'closed', progress: 0 },
+    ],
+    'B': [
+        { id: 3, name: 'Main Barrier', location: 'Section B - Gate 1', status: 'closed', progress: 0 },
+        { id: 4, name: 'Side Barrier', location: 'Section B - Gate 2', status: 'closed', progress: 0 },
+    ],
+    'C': [
+        { id: 5, name: 'Service Entry', location: 'Section C - Dock', status: 'closed', progress: 0 },
+        { id: 6, name: 'Emergency Exit', location: 'Section C - Exit', status: 'closed', progress: 0 },
+    ],
+};
 
 export default function AdminBoomBarrier() {
     const navigate = useNavigate();
+    const [selectedLocation, setSelectedLocation] = useState('A');
+    const [barriers, setBarriers] = useState(barriersByLocation['A'] || []);
+    const [timerDisplay, setTimerDisplay] = useState({});
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    // Barrier states: 'closed', 'opening', 'open', 'closing'
-    const [barriers, setBarriers] = useState([
-        { id: 1, name: 'Main Entrance Barrier', location: 'North Gate', status: 'closed', progress: 0 },
-        { id: 2, name: 'Exit Gate Barrier', location: 'South Gate', status: 'closed', progress: 0 },
-        { id: 3, name: 'VIP Lane Barrier', location: 'West Wing', status: 'closed', progress: 0 },
-    ]);
-
-    // Auto-close timers for each barrier
-    const [timers, setTimers] = useState({});
+    const activeIntervals = useRef({});
 
     useEffect(() => {
-        // Cleanup all timers on unmount
+        const data = barriersByLocation[selectedLocation];
+        if (data) {
+            setBarriers(data);
+        }
+    }, [selectedLocation]);
+
+    useEffect(() => {
         return () => {
-            Object.values(timers).forEach(timer => {
-                if (timer.interval) clearInterval(timer.interval);
-                if (timer.timeout) clearTimeout(timer.timeout);
-            });
+            Object.values(activeIntervals.current).forEach(clearInterval);
         };
-    }, [timers]);
-
-    const openBarrier = (barrierId) => {
-        // Start opening animation
-        setBarriers(prev => prev.map(b =>
-            b.id === barrierId ? { ...b, status: 'opening', progress: 0 } : b
-        ));
-
-        // Animate progress from 0 to 100 over 2.5 seconds
-        const startTime = Date.now();
-        const duration = 2500;
-
-        const progressInterval = setInterval(() => {
-            const elapsed = Date.now() - startTime;
-            const newProgress = Math.min((elapsed / duration) * 100, 100);
-
-            setBarriers(prev => prev.map(b =>
-                b.id === barrierId ? { ...b, progress: newProgress } : b
-            ));
-
-            if (newProgress >= 100) {
-                clearInterval(progressInterval);
-
-                // Set to open state
-                setBarriers(prev => prev.map(b =>
-                    b.id === barrierId ? { ...b, status: 'open', progress: 100 } : b
-                ));
-
-                // Start 5-second countdown
-                let countdown = 5;
-                setTimers(prev => ({
-                    ...prev,
-                    [barrierId]: { ...prev[barrierId], countdown }
-                }));
-
-                const countdownInterval = setInterval(() => {
-                    countdown--;
-                    setTimers(prev => ({
-                        ...prev,
-                        [barrierId]: { ...prev[barrierId], countdown }
-                    }));
-
-                    if (countdown <= 0) {
-                        clearInterval(countdownInterval);
-                        closeBarrier(barrierId);
-                    }
-                }, 1000);
-
-                setTimers(prev => ({
-                    ...prev,
-                    [barrierId]: { interval: countdownInterval }
-                }));
-            }
-        }, 16); // ~60fps
-
-        setTimers(prev => ({
-            ...prev,
-            [barrierId]: { interval: progressInterval }
-        }));
-    };
+    }, []);
 
     const closeBarrier = (barrierId) => {
-        // Start closing animation
+        if (activeIntervals.current[barrierId]) {
+            clearInterval(activeIntervals.current[barrierId]);
+        }
+
         setBarriers(prev => prev.map(b =>
-            b.id === barrierId ? { ...b, status: 'closing', progress: 100 } : b
+            b.id === barrierId ? { ...b, status: 'closing' } : b
         ));
 
-        // Animate progress from 100 to 0 over 2.5 seconds
-        const startTime = Date.now();
-        const duration = 2500;
+        setTimerDisplay(prev => {
+            const newState = { ...prev };
+            delete newState[barrierId];
+            return newState;
+        });
 
-        const progressInterval = setInterval(() => {
+        const startTime = Date.now();
+        const duration = 2000;
+
+        const closeInterval = setInterval(() => {
             const elapsed = Date.now() - startTime;
             const newProgress = Math.max(100 - (elapsed / duration) * 100, 0);
 
@@ -104,155 +76,217 @@ export default function AdminBoomBarrier() {
             ));
 
             if (newProgress <= 0) {
-                clearInterval(progressInterval);
+                clearInterval(closeInterval);
+                delete activeIntervals.current[barrierId];
                 setBarriers(prev => prev.map(b =>
                     b.id === barrierId ? { ...b, status: 'closed', progress: 0 } : b
                 ));
             }
-        }, 16); // ~60fps
+        }, 16);
+
+        activeIntervals.current[barrierId] = closeInterval;
     };
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'open': return 'green';
-            case 'closed': return 'red';
-            case 'opening':
-            case 'closing': return 'blue';
-            default: return 'gray';
+    const openBarrier = (barrierId) => {
+        if (activeIntervals.current[barrierId]) {
+            clearInterval(activeIntervals.current[barrierId]);
         }
-    };
 
-    const getStatusText = (status) => {
-        switch (status) {
-            case 'open': return 'Open';
-            case 'closed': return 'Closed';
-            case 'opening': return 'Opening';
-            case 'closing': return 'Closing';
-            default: return 'Unknown';
-        }
+        setBarriers(prev => prev.map(b =>
+            b.id === barrierId ? { ...b, status: 'opening', progress: 0 } : b
+        ));
+
+        const startTime = Date.now();
+        const duration = 2000;
+
+        const openInterval = setInterval(() => {
+            const elapsed = Date.now() - startTime;
+            const newProgress = Math.min((elapsed / duration) * 100, 100);
+
+            setBarriers(prev => prev.map(b =>
+                b.id === barrierId ? { ...b, progress: newProgress } : b
+            ));
+
+            if (newProgress >= 100) {
+                clearInterval(openInterval);
+                setBarriers(prev => prev.map(b =>
+                    b.id === barrierId ? { ...b, status: 'open', progress: 100 } : b
+                ));
+
+                let countdown = 5;
+                setTimerDisplay(prev => ({ ...prev, [barrierId]: 5 }));
+
+                const countdownInterval = setInterval(() => {
+                    countdown--;
+                    setTimerDisplay(prev => ({ ...prev, [barrierId]: countdown }));
+                    if (countdown <= 0) {
+                        clearInterval(countdownInterval);
+                        closeBarrier(barrierId);
+                    }
+                }, 1000);
+                activeIntervals.current[barrierId] = countdownInterval;
+            }
+        }, 16);
+
+        activeIntervals.current[barrierId] = openInterval;
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-32">
+        <div className="min-h-screen bg-gray-100 font-sans text-gray-900 pb-20">
             {/* Header */}
-            <div className="sticky top-0 bg-white/90 backdrop-blur-xl z-40 border-b border-gray-100/50 px-6 py-4 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
-                    >
-                        <ArrowLeft size={20} className="text-gray-600" />
-                    </button>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Boom Barrier Control</h1>
-                        <p className="text-sm text-gray-500">Remotely operate and monitor parking boom barriers</p>
+            <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-4">
+                <div className="max-w-5xl mx-auto flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500">
+                            <ArrowLeft size={22} />
+                        </button>
+                        <div>
+                            <h1 className="text-xl font-bold tracking-tight text-gray-900">Barrier Control</h1>
+                            <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </span>
+                                System Online
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Location Selector */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                            className="flex items-center gap-2 bg-brand-900 text-white pl-4 pr-3 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-950 transition-all shadow-lg shadow-gray-200"
+                        >
+                            <MapPin size={16} className="text-gray-300" />
+                            <span>Location {selectedLocation}</span>
+                            <ChevronDown size={14} className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        <AnimatePresence>
+                            {isDropdownOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                    className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden"
+                                >
+                                    <div className="p-1">
+                                        {['A', 'B', 'C'].map(loc => (
+                                            <button
+                                                key={loc}
+                                                onClick={() => { setSelectedLocation(loc); setIsDropdownOpen(false); }}
+                                                className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${selectedLocation === loc ? 'bg-gray-100 text-gray-900' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                                    }`}
+                                            >
+                                                Location {loc.toUpperCase()}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
-            </div>
+            </nav>
 
-            {/* Barrier Cards - Compact Layout */}
-            <div className="p-6 space-y-4">
-                {barriers.map((barrier, index) => {
-                    const color = getStatusColor(barrier.status);
-                    const isDisabled = barrier.status !== 'closed';
-                    const timer = timers[barrier.id];
+            <main className="max-w-5xl mx-auto px-6 py-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {barriers.map(barrier => {
+                        const countdownValue = timerDisplay[barrier.id];
+                        const isOpen = barrier.status === 'open';
+                        const isClosed = barrier.status === 'closed';
+                        const isMoving = barrier.status === 'opening' || barrier.status === 'closing';
 
-                    return (
-                        <motion.div
-                            key={barrier.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className={`bg-white rounded-2xl shadow-soft border-t-4 overflow-hidden
-                ${color === 'green' ? 'border-t-green-500' : ''}
-                ${color === 'red' ? 'border-t-red-500' : ''}
-                ${color === 'blue' ? 'border-t-blue-500' : ''}
-              `}
-                        >
-                            {/* Compact Header & Status Row */}
-                            <div className="p-4 flex items-center justify-between">
-                                {/* Left: Barrier Info */}
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-bold text-gray-900">{barrier.name}</h3>
-                                    <p className="text-xs text-gray-500">{barrier.location}</p>
+                        return (
+                            <motion.div key={barrier.id} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-200/60 relative overflow-hidden group">
+                                <div className="flex justify-between items-start mb-8 relative z-10">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-brand-600 transition-colors uppercase tracking-tight">{barrier.name}</h3>
+                                        <p className="text-sm text-gray-400 font-medium flex items-center gap-1">{barrier.location}</p>
+                                    </div>
+                                    <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1.5 ${isOpen ? 'bg-emerald-100 text-emerald-700' :
+                                            isClosed ? 'bg-gray-100 text-gray-600' :
+                                                'bg-brand-100 text-brand-700'
+                                        }`}>
+                                        {isMoving ? <span className="animate-spin text-[10px]">⏳</span> : null}
+                                        {barrier.status}
+                                    </div>
                                 </div>
 
-                                {/* Center: Status Icon (Smaller) */}
-                                <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-md mx-4
-                  ${color === 'green' ? 'bg-green-500' : ''}
-                  ${color === 'red' ? 'bg-red-500' : ''}
-                  ${color === 'blue' ? 'bg-blue-500' : ''}
-                `}>
-                                    {barrier.status === 'open' && <ShieldCheck size={32} className="text-white" />}
-                                    {barrier.status === 'closed' && <ShieldAlert size={32} className="text-white" />}
-                                    {(barrier.status === 'opening' || barrier.status === 'closing') && (
-                                        <Loader2 size={32} className="text-white animate-spin" />
-                                    )}
-                                </div>
+                                {/* Animation Region */}
+                                <div className="h-40 relative bg-gray-50 rounded-2xl border border-gray-100 mb-6 flex items-end px-8 overflow-hidden">
+                                    <div className="absolute bottom-0 left-0 w-full h-4 bg-gray-200 border-t border-gray-300"></div>
 
-                                {/* Right: Status Text & Timer */}
-                                <div className="flex-1 text-right">
-                                    <p className={`text-lg font-bold
-                    ${color === 'green' ? 'text-green-600' : ''}
-                    ${color === 'red' ? 'text-red-600' : ''}
-                    ${color === 'blue' ? 'text-blue-600' : ''}
-                  `}>
-                                        {getStatusText(barrier.status)}
-                                    </p>
-                                    {barrier.status === 'open' && timer?.countdown !== undefined && (
-                                        <motion.div
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            className="flex items-center justify-end gap-1 text-xs text-gray-600 mt-1"
-                                        >
-                                            <motion.div
-                                                animate={{ scale: [1, 1.2, 1] }}
-                                                transition={{ duration: 1, repeat: Infinity }}
-                                            >
-                                                <Clock size={12} className="text-gray-500" />
-                                            </motion.div>
-                                            <span>{timer.countdown}s</span>
-                                        </motion.div>
-                                    )}
-                                </div>
-                            </div>
+                                    {/* Base Post */}
+                                    <div className="w-12 h-20 bg-gradient-to-b from-gray-700 to-gray-900 rounded-t-xl relative z-30 mb-0 shadow-lg border-x border-t border-gray-600">
+                                        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-5 h-5 bg-red-500 rounded-full shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse border-2 border-red-400"></div>
+                                        <div className="absolute top-12 left-1/2 -translate-x-1/2 w-4 h-4 bg-gray-800 rounded-full border border-gray-600"></div>
+                                    </div>
 
-                            {/* Progress Bar & Button Row */}
-                            <div className="px-4 pb-4">
-                                {/* Progress Bar */}
-                                <div className="bg-gray-100 rounded-full h-2 overflow-hidden mb-3">
+                                    {/* Rotating Arm */}
                                     <motion.div
-                                        className={`h-full rounded-full
-                      ${barrier.progress === 0 ? 'bg-red-500' : ''}
-                      ${barrier.progress === 100 ? 'bg-green-500' : ''}
-                      ${barrier.progress > 0 && barrier.progress < 100 ? 'bg-blue-500' : ''}
-                    `}
-                                        initial={{ width: `${barrier.progress}%` }}
-                                        animate={{ width: `${barrier.progress}%` }}
-                                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                                    />
+                                        className="h-4 origin-left absolute left-[56px] bottom-[28px] rounded-r-lg z-20 shadow-2xl border border-white/20"
+                                        style={{
+                                            width: 'calc(100% - 90px)',
+                                            background: 'repeating-linear-gradient(90deg, #dc2626, #dc2626 20px, #ffffff 20px, #ffffff 40px)'
+                                        }}
+                                        initial={false}
+                                        animate={{ rotate: isClosed ? 0 : isMoving && barrier.status === 'opening' ? -80 : isOpen ? -90 : -10 }}
+                                        transition={{
+                                            type: "spring",
+                                            stiffness: 80,
+                                            damping: 15,
+                                            mass: 1.2
+                                        }}
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent"></div>
+                                    </motion.div>
+
+                                    {/* Timer/Status Badge */}
+                                    <AnimatePresence>
+                                        {countdownValue > 0 && isOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.8 }}
+                                                className="absolute top-4 right-4 z-40 bg-brand-900 text-white px-3 py-1.5 rounded-lg text-sm font-black flex items-center gap-2 shadow-xl border border-brand-800"
+                                            >
+                                                <Clock size={16} className="animate-pulse" />
+                                                <span>{countdownValue}s</span>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
 
-                                {/* Action Button */}
-                                <motion.button
-                                    whileTap={!isDisabled ? { scale: 0.95 } : {}}
-                                    onClick={() => !isDisabled && openBarrier(barrier.id)}
-                                    disabled={isDisabled}
-                                    className={`w-full py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all text-sm
-                    ${isDisabled
-                                            ? 'bg-gray-300 cursor-not-allowed opacity-60'
-                                            : 'bg-green-500 hover:bg-green-600 active:scale-95'
-                                        }
-                  `}
+                                <button
+                                    onClick={() => !isOpen && !isMoving && openBarrier(barrier.id)}
+                                    disabled={isOpen || isMoving}
+                                    className={`relative overflow-hidden w-full py-4 rounded-xl font-bold text-sm tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg
+                                        ${isOpen ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-brand-900 text-white hover:bg-brand-950 active:scale-95 shadow-brand-900/10'}
+                                        ${isMoving ? 'opacity-90 cursor-wait' : ''}
+                                    `}
                                 >
-                                    <ShieldCheck size={18} />
-                                    {isDisabled ? 'Operating' : 'Open Barrier'}
-                                </motion.button>
-                            </div>
-                        </motion.div>
-                    );
-                })}
-            </div>
+                                    {isMoving ? (
+                                        <><span className="animate-spin">⏳</span> PROCESSING...</>
+                                    ) : isOpen ? (
+                                        <><CheckCircle2 size={18} /> BARRIER OPEN</>
+                                    ) : (
+                                        <><Power size={18} /> OPEN BARRIER</>
+                                    )}
+                                    {isMoving && (
+                                        <motion.div
+                                            className="absolute bottom-0 left-0 h-1 bg-white/30"
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${barrier.progress}%` }}
+                                        />
+                                    )}
+                                </button>
+                            </motion.div>
+                        );
+                    })}
+                </div>
+            </main>
         </div>
     );
 }
