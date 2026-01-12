@@ -81,7 +81,7 @@ export default function Login() {
                 onClick={() => switchMode('admin')}
                 className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${mode === 'admin' ? 'bg-white text-brand-900 shadow-sm' : 'text-gray-500'}`}
               >
-                mike corleone
+                Dakota Whitecloud
               </button>
             </div>
           </div>
@@ -103,8 +103,8 @@ export default function Login() {
                     <Input
                       icon={Mail}
                       type="email"
-                      placeholder="mike@proparking.com"
-                      defaultValue="mike@proparking.com"
+                      placeholder="dakotawhitecloud@proparking.com"
+                      defaultValue="dakotawhitecloud@proparking.com"
                     />
                     <Input
                       icon={Lock}
