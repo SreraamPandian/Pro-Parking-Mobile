@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Outlet, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import Login from './pages/Login';
+import { DataProvider, useData } from './context/DataContext';
 
 // User Pages (Shared by Visitor & Staff)
 import StaffHome from './pages/staff/StaffHome';
@@ -45,6 +46,9 @@ const UserLayout = ({ type }) => {
     { icon: User, label: 'Profile', path: `${basePath}/profile` },
   ];
 
+  // Use Context for Data
+  const { bookings, setBookings, notifications, setNotifications } = useData();
+
   useEffect(() => {
     // Check if we've already shown the mock web booking this session
     const hasShown = sessionStorage.getItem('pro_parking_web_booking_shown');
@@ -78,23 +82,14 @@ const UserLayout = ({ type }) => {
           actionPath: `${basePath}/booking`
         };
 
-        const savedNotifs = localStorage.getItem('pro_parking_notifications');
-        const existingNotifs = savedNotifs ? JSON.parse(savedNotifs) : [];
-        localStorage.setItem('pro_parking_notifications', JSON.stringify([mockNotif, ...existingNotifs]));
+        setNotifications([mockNotif, ...notifications]);
+        setBookings([mockBooking, ...bookings]);
 
-        // Inject into localStorage for persistence in Upcoming list
-        const saved = localStorage.getItem('pro_parking_bookings');
-        const existing = saved ? JSON.parse(saved) : [];
-        const updated = [mockBooking, ...existing];
-        localStorage.setItem('pro_parking_bookings', JSON.stringify(updated));
-
-        // Trigger a custom event
-        window.dispatchEvent(new Event('storage'));
       }, 3000);
 
       return () => clearTimeout(timer);
     }
-  }, [location.pathname, basePath]);
+  }, [location.pathname, basePath, bookings, setBookings, notifications, setNotifications]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -134,36 +129,38 @@ const AdminLayout = () => {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Login />} />
+    <DataProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Login />} />
 
-        {/* Visitor Routes */}
-        <Route path="/visitor" element={<UserLayout type="visitor" />}>
-          <Route path="home" element={<StaffHome />} />
-          <Route path="vehicles" element={<StaffVehicles />} />
-          <Route path="profile" element={<StaffProfile />} />
-          <Route path="booking" element={<StaffBooking />} />
-          <Route path="payment" element={<StaffPayment />} />
-          <Route path="history" element={<StaffHistory />} />
-          <Route path="notifications" element={<StaffNotifications />} />
-        </Route>
+          {/* Visitor Routes */}
+          <Route path="/visitor" element={<UserLayout type="visitor" />}>
+            <Route path="home" element={<StaffHome />} />
+            <Route path="vehicles" element={<StaffVehicles />} />
+            <Route path="profile" element={<StaffProfile />} />
+            <Route path="booking" element={<StaffBooking />} />
+            <Route path="payment" element={<StaffPayment />} />
+            <Route path="history" element={<StaffHistory />} />
+            <Route path="notifications" element={<StaffNotifications />} />
+          </Route>
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="live-view" element={<AdminLiveView />} />
-          <Route path="reports" element={<AdminReports />} />
-          <Route path="barrier" element={<AdminBoomBarrier />} />
-          <Route path="settings" element={<AdminSettings />} />
-          <Route path="scanner" element={<AdminScanner />} />
-          <Route path="transactions" element={<AdminTransactions />} />
-        </Route>
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="live-view" element={<AdminLiveView />} />
+            <Route path="reports" element={<AdminReports />} />
+            <Route path="barrier" element={<AdminBoomBarrier />} />
+            <Route path="settings" element={<AdminSettings />} />
+            <Route path="scanner" element={<AdminScanner />} />
+            <Route path="transactions" element={<AdminTransactions />} />
+          </Route>
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </DataProvider>
   );
 }
 

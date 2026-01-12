@@ -1,88 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useData } from '../../context/DataContext';
 import { DollarSign, Banknote, CreditCard, ChevronDown, ArrowLeft } from 'lucide-react';
 import { ApplePayLogo, GooglePayLogo, VisaLogo, MastercardLogo } from '../../components/ui/PaymentLogos';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
-// Mock Data with Dates - Comprehensive data for ALL filter combinations
-// Ensuring every combination returns at least 5 results
-// Assuming today is 2026-01-12
-const transactions = [
-  // TODAY (2026-01-12) - Multiple entries per method/dept combination
-  { id: 1, method: 'Apple Pay', amount: '12.50', time: '2:30 PM', date: '2026-01-12', vehicle: 'ABC-1234', dept: 'Visitor', status: 'success' },
-  { id: 2, method: 'Apple Pay', amount: '14.00', time: '1:45 PM', date: '2026-01-12', vehicle: 'DEF-5678', dept: 'Staff', status: 'success' },
-  { id: 3, method: 'Apple Pay', amount: '16.50', time: '12:30 PM', date: '2026-01-12', vehicle: 'GHI-9012', dept: 'VIP', status: 'success' },
-
-  { id: 4, method: 'Google Pay', amount: '15.50', time: '11:30 AM', date: '2026-01-12', vehicle: 'PQR-1122', dept: 'Visitor', status: 'success' },
-  { id: 5, method: 'Google Pay', amount: '13.00', time: '10:15 AM', date: '2026-01-12', vehicle: 'STU-3344', dept: 'Staff', status: 'success' },
-  { id: 6, method: 'Google Pay', amount: '17.00', time: '9:45 AM', date: '2026-01-12', vehicle: 'VWX-5566', dept: 'VIP', status: 'success' },
-
-  { id: 7, method: 'Cash', amount: '8.00', time: '2:15 PM', date: '2026-01-12', vehicle: 'XYZ-9876', dept: 'Staff', status: 'success' },
-  { id: 8, method: 'Cash', amount: '10.00', time: '1:30 PM', date: '2026-01-12', vehicle: 'YZA-1111', dept: 'Visitor', status: 'success' },
-  { id: 9, method: 'Cash', amount: '7.50', time: '11:00 AM', date: '2026-01-12', vehicle: 'BCD-2222', dept: 'Staff', status: 'success' },
-
-  { id: 10, method: 'Visa', amount: '24.00', time: '1:55 PM', date: '2026-01-12', vehicle: 'LMN-4567', dept: 'Visitor', status: 'success' },
-  { id: 11, method: 'Visa', amount: '22.00', time: '12:20 PM', date: '2026-01-12', vehicle: 'EFG-7788', dept: 'Staff', status: 'success' },
-  { id: 12, method: 'Visa', amount: '26.00', time: '10:30 AM', date: '2026-01-12', vehicle: 'HIJ-9900', dept: 'VIP', status: 'success' },
-
-  { id: 13, method: 'Mastercard', amount: '10.00', time: '10:45 AM', date: '2026-01-12', vehicle: 'STU-9988', dept: 'Visitor', status: 'success' },
-  { id: 14, method: 'Mastercard', amount: '12.00', time: '9:30 AM', date: '2026-01-12', vehicle: 'KLM-1122', dept: 'Staff', status: 'success' },
-  { id: 15, method: 'Mastercard', amount: '14.00', time: '8:45 AM', date: '2026-01-12', vehicle: 'NOP-3344', dept: 'VIP', status: 'success' },
-
-  { id: 16, method: 'Card', amount: '18.00', time: '9:30 AM', date: '2026-01-12', vehicle: 'DEF-5678', dept: 'Visitor', status: 'success' },
-  { id: 17, method: 'Card', amount: '20.00', time: '8:15 AM', date: '2026-01-12', vehicle: 'QRS-5566', dept: 'Staff', status: 'success' },
-  { id: 18, method: 'Card', amount: '22.00', time: '7:30 AM', date: '2026-01-12', vehicle: 'TUV-7788', dept: 'VIP', status: 'success' },
-
-  { id: 19, method: 'Waiver', amount: '0.00', time: '10:00 AM', date: '2026-01-12', vehicle: 'VIP-100', dept: 'VIP', status: 'success' },
-  { id: 20, method: 'Waiver', amount: '0.00', time: '9:00 AM', date: '2026-01-12', vehicle: 'VIP-101', dept: 'VIP', status: 'success' },
-
-  // YESTERDAY (2026-01-11) - Multiple entries per combination
-  { id: 21, method: 'Apple Pay', amount: '18.00', time: '3:15 PM', date: '2026-01-11', vehicle: 'MNO-7788', dept: 'Visitor', status: 'success' },
-  { id: 22, method: 'Apple Pay', amount: '19.00', time: '2:30 PM', date: '2026-01-11', vehicle: 'WXY-1234', dept: 'Staff', status: 'success' },
-  { id: 23, method: 'Google Pay', amount: '14.00', time: '11:00 AM', date: '2026-01-11', vehicle: 'GHI-6677', dept: 'Staff', status: 'success' },
-  { id: 24, method: 'Google Pay', amount: '15.00', time: '10:15 AM', date: '2026-01-11', vehicle: 'ZAB-5678', dept: 'Visitor', status: 'success' },
-  { id: 25, method: 'Cash', amount: '5.00', time: '4:30 PM', date: '2026-01-11', vehicle: 'JKL-5544', dept: 'Staff', status: 'success' },
-  { id: 26, method: 'Cash', amount: '6.00', time: '3:45 PM', date: '2026-01-11', vehicle: 'CDE-9012', dept: 'Visitor', status: 'success' },
-  { id: 27, method: 'Visa', amount: '22.00', time: '12:30 PM', date: '2026-01-11', vehicle: 'DEF-3344', dept: 'Visitor', status: 'success' },
-  { id: 28, method: 'Visa', amount: '23.00', time: '11:45 AM', date: '2026-01-11', vehicle: 'FGH-3456', dept: 'Staff', status: 'success' },
-  { id: 29, method: 'Mastercard', amount: '16.00', time: '10:15 AM', date: '2026-01-11', vehicle: 'JKL-8899', dept: 'Visitor', status: 'success' },
-  { id: 30, method: 'Mastercard', amount: '17.00', time: '9:30 AM', date: '2026-01-11', vehicle: 'IJK-4567', dept: 'Staff', status: 'success' },
-  { id: 31, method: 'Card', amount: '20.00', time: '9:00 AM', date: '2026-01-11', vehicle: 'QRS-1234', dept: 'Staff', status: 'success' },
-  { id: 32, method: 'Card', amount: '21.00', time: '8:15 AM', date: '2026-01-11', vehicle: 'LMN-6789', dept: 'Visitor', status: 'success' },
-  { id: 33, method: 'Waiver', amount: '0.00', time: '2:00 PM', date: '2026-01-11', vehicle: 'VIP-001', dept: 'VIP', status: 'success' },
-  { id: 34, method: 'Waiver', amount: '0.00', time: '1:15 PM', date: '2026-01-11', vehicle: 'VIP-002', dept: 'VIP', status: 'success' },
-
-  // THIS WEEK (2026-01-06 to 2026-01-10) - Comprehensive coverage
-  { id: 35, method: 'Google Pay', amount: '14.50', time: '5:00 PM', date: '2026-01-10', vehicle: 'GHI-6677', dept: 'Visitor', status: 'success' },
-  { id: 36, method: 'Apple Pay', amount: '16.00', time: '11:00 AM', date: '2026-01-09', vehicle: 'ZAB-6688', dept: 'Visitor', status: 'success' },
-  { id: 37, method: 'Cash', amount: '7.00', time: '3:45 PM', date: '2026-01-10', vehicle: 'TUV-2233', dept: 'Staff', status: 'success' },
-  { id: 38, method: 'Cash', amount: '6.50', time: '4:15 PM', date: '2026-01-08', vehicle: 'CDE-9900', dept: 'Staff', status: 'success' },
-  { id: 39, method: 'Cash', amount: '9.00', time: '3:00 PM', date: '2026-01-06', vehicle: 'LMN-5566', dept: 'Staff', status: 'success' },
-  { id: 40, method: 'Mastercard', amount: '20.00', time: '1:20 PM', date: '2026-01-09', vehicle: 'WXY-4455', dept: 'Visitor', status: 'success' },
-  { id: 41, method: 'Mastercard', amount: '12.00', time: '1:45 PM', date: '2026-01-06', vehicle: 'NOP-7788', dept: 'Visitor', status: 'success' },
-  { id: 42, method: 'Visa', amount: '25.00', time: '2:30 PM', date: '2026-01-08', vehicle: 'FGH-1122', dept: 'Visitor', status: 'success' },
-  { id: 43, method: 'Google Pay', amount: '13.00', time: '10:15 AM', date: '2026-01-07', vehicle: 'IJK-3344', dept: 'Visitor', status: 'success' },
-  { id: 44, method: 'Card', amount: '15.00', time: '11:30 AM', date: '2026-01-07', vehicle: 'TUV-9999', dept: 'VIP', status: 'success' },
-  { id: 45, method: 'Card', amount: '16.00', time: '10:45 AM', date: '2026-01-09', vehicle: 'OPQ-8888', dept: 'Visitor', status: 'success' },
-  { id: 46, method: 'Waiver', amount: '0.00', time: '10:30 AM', date: '2026-01-09', vehicle: 'VIP-200', dept: 'VIP', status: 'success' },
-  { id: 47, method: 'Waiver', amount: '0.00', time: '9:45 AM', date: '2026-01-08', vehicle: 'VIP-201', dept: 'VIP', status: 'success' },
-
-  // EARLIER (before 2026-01-06) - All methods and departments
-  { id: 48, method: 'Apple Pay', amount: '11.50', time: '2:45 PM', date: '2026-01-05', vehicle: 'OPQ-7788', dept: 'Visitor', status: 'success' },
-  { id: 49, method: 'Apple Pay', amount: '12.50', time: '1:30 PM', date: '2026-01-04', vehicle: 'RST-1111', dept: 'Staff', status: 'success' },
-  { id: 50, method: 'Mastercard', amount: '19.00', time: '1:30 PM', date: '2026-01-04', vehicle: 'RST-9900', dept: 'Visitor', status: 'success' },
-  { id: 51, method: 'Mastercard', amount: '18.00', time: '12:45 PM', date: '2026-01-03', vehicle: 'UVW-2222', dept: 'Staff', status: 'success' },
-  { id: 52, method: 'Cash', amount: '8.50', time: '11:45 AM', date: '2026-01-03', vehicle: 'UVW-1122', dept: 'Staff', status: 'success' },
-  { id: 53, method: 'Cash', amount: '7.50', time: '10:30 AM', date: '2026-01-05', vehicle: 'XYZ-3333', dept: 'Visitor', status: 'success' },
-  { id: 54, method: 'Visa', amount: '23.00', time: '4:00 PM', date: '2026-01-02', vehicle: 'XYZ-3344', dept: 'Visitor', status: 'success' },
-  { id: 55, method: 'Visa', amount: '24.00', time: '3:15 PM', date: '2026-01-01', vehicle: 'ABC-4444', dept: 'Staff', status: 'success' },
-  { id: 56, method: 'Google Pay', amount: '17.50', time: '2:15 PM', date: '2026-01-01', vehicle: 'ABC-5566', dept: 'Visitor', status: 'failed' },
-  { id: 57, method: 'Google Pay', amount: '16.50', time: '1:00 PM', date: '2026-01-02', vehicle: 'DEF-5555', dept: 'Staff', status: 'success' },
-  { id: 58, method: 'Card', amount: '21.00', time: '10:00 AM', date: '2026-01-03', vehicle: 'WXY-7777', dept: 'Visitor', status: 'success' },
-  { id: 59, method: 'Card', amount: '22.00', time: '9:15 AM', date: '2026-01-05', vehicle: 'GHI-6666', dept: 'Staff', status: 'success' },
-  { id: 60, method: 'Waiver', amount: '0.00', time: '12:00 PM', date: '2026-01-01', vehicle: 'VIP-300', dept: 'VIP', status: 'success' },
-  { id: 61, method: 'Waiver', amount: '0.00', time: '11:15 AM', date: '2026-01-04', vehicle: 'VIP-301', dept: 'VIP', status: 'success' },
-];
+// Mock Data removed - in DataContext
 
 const FilterDropdown = ({ label, active, options, onSelect }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -142,6 +65,7 @@ const FilterDropdown = ({ label, active, options, onSelect }) => {
 
 export default function AdminReports() {
   const navigate = useNavigate();
+  const { transactions } = useData();
   const [dateFilter, setDateFilter] = useState('Today');
   const [methodFilter, setMethodFilter] = useState('All');
   const [deptFilter, setDeptFilter] = useState('All');

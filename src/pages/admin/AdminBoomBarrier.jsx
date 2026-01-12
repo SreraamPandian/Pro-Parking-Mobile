@@ -11,37 +11,24 @@ import {
     ChevronDown
 } from 'lucide-react';
 
+import { useData } from '../../context/DataContext';
+
 // --- Data Configuration ---
-const barriersByLocation = {
-    'A': [
-        { id: 1, name: 'Entry Barrier', location: 'Section A - North', status: 'closed', progress: 0 },
-        { id: 2, name: 'Exit Barrier', location: 'Section A - South', status: 'closed', progress: 0 },
-    ],
-    'B': [
-        { id: 3, name: 'Main Barrier', location: 'Section B - Gate 1', status: 'closed', progress: 0 },
-        { id: 4, name: 'Side Barrier', location: 'Section B - Gate 2', status: 'closed', progress: 0 },
-    ],
-    'C': [
-        { id: 5, name: 'Service Entry', location: 'Section C - Dock', status: 'closed', progress: 0 },
-        { id: 6, name: 'Emergency Exit', location: 'Section C - Exit', status: 'closed', progress: 0 },
-    ],
-};
+// Removed hardcoded barriersByLocation - now in DataContext
 
 export default function AdminBoomBarrier() {
     const navigate = useNavigate();
+    const { barriers: globalBarriers, setBarriers: setGlobalBarriers } = useData();
     const [selectedLocation, setSelectedLocation] = useState('A');
-    const [barriers, setBarriers] = useState(barriersByLocation['A'] || []);
+    // We derive 'barriers' from global state. We don't need local state for it, but for compatibility with existing code we might need to map it.
+    // Actually simplicity is better: just use globalBarriers[selectedLocation].
+    const barriers = globalBarriers[selectedLocation] || [];
+
+    // We use a local map for timer display only
     const [timerDisplay, setTimerDisplay] = useState({});
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const activeIntervals = useRef({});
-
-    useEffect(() => {
-        const data = barriersByLocation[selectedLocation];
-        if (data) {
-            setBarriers(data);
-        }
-    }, [selectedLocation]);
 
     useEffect(() => {
         return () => {
@@ -49,14 +36,22 @@ export default function AdminBoomBarrier() {
         };
     }, []);
 
+    // Helper to update a specific barrier in the global state
+    const updateBarrierState = (barrierId, updates) => {
+        setGlobalBarriers(prev => {
+            const locationBarriers = prev[selectedLocation].map(b =>
+                b.id === barrierId ? { ...b, ...updates } : b
+            );
+            return { ...prev, [selectedLocation]: locationBarriers };
+        });
+    };
+
     const closeBarrier = (barrierId) => {
         if (activeIntervals.current[barrierId]) {
             clearInterval(activeIntervals.current[barrierId]);
         }
 
-        setBarriers(prev => prev.map(b =>
-            b.id === barrierId ? { ...b, status: 'closing' } : b
-        ));
+        updateBarrierState(barrierId, { status: 'closing' });
 
         setTimerDisplay(prev => {
             const newState = { ...prev };
@@ -71,16 +66,12 @@ export default function AdminBoomBarrier() {
             const elapsed = Date.now() - startTime;
             const newProgress = Math.max(100 - (elapsed / duration) * 100, 0);
 
-            setBarriers(prev => prev.map(b =>
-                b.id === barrierId ? { ...b, progress: newProgress } : b
-            ));
+            updateBarrierState(barrierId, { progress: newProgress });
 
             if (newProgress <= 0) {
                 clearInterval(closeInterval);
                 delete activeIntervals.current[barrierId];
-                setBarriers(prev => prev.map(b =>
-                    b.id === barrierId ? { ...b, status: 'closed', progress: 0 } : b
-                ));
+                updateBarrierState(barrierId, { status: 'closed', progress: 0 });
             }
         }, 16);
 
@@ -92,9 +83,7 @@ export default function AdminBoomBarrier() {
             clearInterval(activeIntervals.current[barrierId]);
         }
 
-        setBarriers(prev => prev.map(b =>
-            b.id === barrierId ? { ...b, status: 'opening', progress: 0 } : b
-        ));
+        updateBarrierState(barrierId, { status: 'opening', progress: 0 });
 
         const startTime = Date.now();
         const duration = 2000;
@@ -103,15 +92,11 @@ export default function AdminBoomBarrier() {
             const elapsed = Date.now() - startTime;
             const newProgress = Math.min((elapsed / duration) * 100, 100);
 
-            setBarriers(prev => prev.map(b =>
-                b.id === barrierId ? { ...b, progress: newProgress } : b
-            ));
+            updateBarrierState(barrierId, { progress: newProgress });
 
             if (newProgress >= 100) {
                 clearInterval(openInterval);
-                setBarriers(prev => prev.map(b =>
-                    b.id === barrierId ? { ...b, status: 'open', progress: 100 } : b
-                ));
+                updateBarrierState(barrierId, { status: 'open', progress: 100 });
 
                 let countdown = 5;
                 setTimerDisplay(prev => ({ ...prev, [barrierId]: 5 }));
@@ -206,8 +191,8 @@ export default function AdminBoomBarrier() {
                                         <p className="text-sm text-gray-400 font-medium flex items-center gap-1">{barrier.location}</p>
                                     </div>
                                     <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide flex items-center gap-1.5 ${isOpen ? 'bg-emerald-100 text-emerald-700' :
-                                            isClosed ? 'bg-gray-100 text-gray-600' :
-                                                'bg-brand-100 text-brand-700'
+                                        isClosed ? 'bg-gray-100 text-gray-600' :
+                                            'bg-brand-100 text-brand-700'
                                         }`}>
                                         {isMoving ? <span className="animate-spin text-[10px]">⏳</span> : null}
                                         {barrier.status}

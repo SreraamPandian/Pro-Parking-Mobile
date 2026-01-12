@@ -1,14 +1,18 @@
 import React, { useState, useRef } from 'react';
+import { useData } from '../../context/DataContext';
 import { User, LogOut, ChevronRight, Mail, Phone, Shield, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AdminSettings() {
-  const navigate = useNavigate();
+  const navigator = useNavigate(); // Renaming to avoid conflict if any (though useNavigate is fine)
+  const { user, setUser, logout } = useData();
   const [view, setView] = useState('settings'); // 'settings', 'change-password'
   const [showDetails, setShowDetails] = useState(false);
   const fileInputRef = useRef(null);
-  const [profileImage, setProfileImage] = useState('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRX0v92XEuKpPKzmaKuMKpaZmHix6v6NSWNA&s');
+
+  // Use user.image from context
+  const profileImage = user.image;
 
   // Change Password State
   const [oldPassword, setOldPassword] = useState('');
@@ -23,10 +27,15 @@ export default function AdminSettings() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfileImage(reader.result);
+        setUser({ ...user, image: reader.result });
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigator('/');
   };
 
   return (
@@ -63,7 +72,7 @@ export default function AdminSettings() {
                 />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Dakota Whitecloud</h2>
+                <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
                 <p className="text-gray-500">Manager Role</p>
               </div>
             </div>
@@ -97,14 +106,14 @@ export default function AdminSettings() {
                         <Shield size={18} className="text-brand-500" />
                         <div>
                           <p className="text-xs text-gray-400 font-bold uppercase">Full Name</p>
-                          <p className="font-medium text-gray-900">Dakota Whitecloud</p>
+                          <p className="font-medium text-gray-900">{user.name}</p>
                         </div>
                       </div>
                       <div className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center gap-3">
                         <Mail size={18} className="text-brand-500" />
                         <div>
                           <p className="text-xs text-gray-400 font-bold uppercase">Email Address</p>
-                          <p className="font-medium text-gray-900">dakotawhitecloud@proparking.com</p>
+                          <p className="font-medium text-gray-900">{user.email}</p>
                         </div>
                       </div>
                     </div>
@@ -128,7 +137,7 @@ export default function AdminSettings() {
             </div>
 
             <button
-              onClick={() => navigate('/')}
+              onClick={handleLogout}
               className="w-full bg-red-50 text-red-600 font-semibold py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-red-100 transition-colors"
             >
               <LogOut size={20} />

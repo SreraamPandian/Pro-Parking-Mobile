@@ -1,67 +1,31 @@
 import React, { useState, useEffect } from 'react';
+import { useData } from '../../context/DataContext';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, ArrowLeft, Globe, Trash2, CheckCircle2, ChevronRight } from 'lucide-react';
 
 export default function StaffNotifications() {
     const navigate = useNavigate();
-    const [notifications, setNotifications] = useState([]);
-
-    useEffect(() => {
-        let saved = localStorage.getItem('pro_parking_notifications');
-        let parsed = saved ? JSON.parse(saved) : [];
-
-        // Force replace if old mock data is present OR if empty
-        const isOldData = parsed.some(n => n.title === 'Welcome to Pro Parking!' || n.title === 'System Update');
-
-        if (parsed.length === 0 || isOldData) {
-            parsed = [
-                {
-                    id: 'init-1',
-                    type: 'web-booking',
-                    title: 'New Web Booking',
-                    message: 'Booking received from the Web Portal for Location A at 09:30 AM. Status: Confirmed.',
-                    time: '1 hour ago',
-                    unread: true,
-                    action: true,
-                    actionLabel: 'View Pass',
-                    actionPath: '/staff/booking'
-                },
-                {
-                    id: 'init-2',
-                    type: 'web-booking',
-                    title: 'New Web Booking',
-                    message: 'Booking received from the Web Portal for Block B at 08:00 AM. Status: Confirmed.',
-                    time: '3 hours ago',
-                    unread: true,
-                    action: true,
-                    actionLabel: 'View Pass',
-                    actionPath: '/staff/booking'
-                }
-            ];
-            localStorage.setItem('pro_parking_notifications', JSON.stringify(parsed));
-        }
-
-        setNotifications(parsed);
-
-        // Mark as read when entering the page
-        const read = parsed.map(n => ({ ...n, unread: false }));
-        localStorage.setItem('pro_parking_notifications', JSON.stringify(read));
-        window.dispatchEvent(new Event('storage'));
-    }, []);
+    const { notifications, setNotifications } = useData();
+    // Removed local storage logic as it's handled in DataContext
 
     const clearAll = () => {
         setNotifications([]);
-        localStorage.setItem('pro_parking_notifications', JSON.stringify([]));
-        window.dispatchEvent(new Event('storage'));
     };
 
     const removeNotification = (id) => {
         const updated = notifications.filter(n => n.id !== id);
         setNotifications(updated);
-        localStorage.setItem('pro_parking_notifications', JSON.stringify(updated));
-        window.dispatchEvent(new Event('storage'));
     };
+
+    useEffect(() => {
+        // Mark as read when entering the page
+        const hasUnread = notifications.some(n => n.unread);
+        if (hasUnread) {
+            const read = notifications.map(n => ({ ...n, unread: false }));
+            setNotifications(read);
+        }
+    }, []); // Only runs on mount - dependencies intentionally empty to run once or we can track unread count
 
     return (
         <div className="min-h-screen bg-gray-50 pb-32">

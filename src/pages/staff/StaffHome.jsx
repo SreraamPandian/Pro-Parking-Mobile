@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useData } from '../../context/DataContext';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { Bell, CheckCircle2, QrCode } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -6,37 +7,11 @@ import { motion } from 'framer-motion';
 export default function StaffHome() {
   const { type } = useOutletContext();
   const navigate = useNavigate();
+  const { notifications, user } = useData();
   const isStaff = type === 'staff';
   const basePath = type === 'visitor' ? '/visitor' : '/staff';
 
-  const [hasUnread, setHasUnread] = useState(false);
-
-  // Portal-specific profile data
-  const profileData = isStaff
-    ? {
-      name: 'Aiyana Redfeather',
-      initials: 'SM',
-      image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQF2yaox2cALIq_yyd-9qEyovEsficJr7X9QQ&s'
-    }
-    : {
-      name: 'Aiyana Redfeather',
-      initials: 'MC',
-      image: 'https://static.vecteezy.com/system/resources/thumbnails/058/270/883/small/confident-young-man-posing-with-crossed-arms-in-casual-denim-shirt-png.png'
-    };
-
-  useEffect(() => {
-    const checkUnread = () => {
-      const saved = localStorage.getItem('pro_parking_notifications');
-      if (saved) {
-        const notifs = JSON.parse(saved);
-        setHasUnread(notifs.some(n => n.unread));
-      }
-    };
-
-    checkUnread();
-    window.addEventListener('storage', checkUnread);
-    return () => window.removeEventListener('storage', checkUnread);
-  }, []);
+  const hasUnread = notifications.some(n => n.unread);
 
   return (
     <div className="p-6 pb-32 space-y-6">
@@ -59,7 +34,7 @@ export default function StaffHome() {
             onClick={() => navigate(`${basePath}/profile`)}
             className="w-16 h-16 bg-white rounded-full flex items-center justify-center overflow-hidden border-2 border-white shadow-sm hover:scale-105 transition-transform active:scale-95"
           >
-            <img src={profileData.image} alt={profileData.name} className="w-full h-full object-cover" />
+            <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
           </button>
         </div>
       </header>
@@ -76,11 +51,11 @@ export default function StaffHome() {
 
         <div className="relative z-10 flex flex-col items-center text-center space-y-6">
           <div className="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-full p-1 border-2 border-white/20">
-            <img src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=400&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXNlcnxlbnwwfHwwfHx8MA%3D%3D" alt="User" className="w-full h-full rounded-full object-cover" />
+            <img src={user.image} alt="User" className="w-full h-full rounded-full object-cover" />
           </div>
 
           <div>
-            <h2 className="text-2xl font-bold">{isStaff ? 'Aiyana Redfeather' : 'Aiyana Redfeather'}</h2>
+            <h2 className="text-2xl font-bold">{user.name}</h2>
             {/* Show ID for both Staff and Visitor - Multi-line format */}
             <div className="text-brand-200 text-sm">
               <p>Visitor</p>

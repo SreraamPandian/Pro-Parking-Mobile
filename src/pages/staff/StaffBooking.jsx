@@ -5,21 +5,17 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { ApplePayLogo, GooglePayLogo, VisaLogo, MastercardLogo, PayPalLogo, WaiverLogo, TapLogo } from '../../components/ui/PaymentLogos';
 
-// Initial mock data if storage is empty
-const INITIAL_BOOKINGS = [
-  { id: 1, location: 'Location A', spot: 'A-05', date: 'Dec 25, 2026', time: '10:00 AM', duration: '2h' },
-];
+import { useData } from '../../context/DataContext';
+
+// Initial mock data removed - now in DataContext
 
 export default function StaffBooking() {
   const [view, setView] = useState('list'); // list, wizard
   const [step, setStep] = useState(1);
   const [paymentSubView, setPaymentSubView] = useState('method'); // method, process
 
-  // Persistence Logic
-  const [bookings, setBookings] = useState(() => {
-    const saved = localStorage.getItem('pro_parking_bookings');
-    return saved ? JSON.parse(saved) : INITIAL_BOOKINGS;
-  });
+  // Persistence Logic via DataContext
+  const { bookings, setBookings } = useData();
 
   const [bookingData, setBookingData] = useState({
     location: null,
@@ -67,9 +63,7 @@ export default function StaffBooking() {
         duration: `${bookingData.duration}h`
       };
 
-      const updatedBookings = [newBooking, ...bookings];
-      setBookings(updatedBookings);
-      localStorage.setItem('pro_parking_bookings', JSON.stringify(updatedBookings));
+      setBookings([newBooking, ...bookings]);
 
       setStep(5); // Success step
     }, 2000);

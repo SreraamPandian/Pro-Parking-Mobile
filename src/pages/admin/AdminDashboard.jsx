@@ -1,31 +1,34 @@
 import React, { useState } from 'react';
+import { useData } from '../../context/DataContext';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { ScanLine, FileText, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-// Location-specific data
-const locationData = {
-  'A': { available: 42, occupied: 48, reserved: 10, total: 100 },
-  'B': { available: 35, occupied: 55, reserved: 10, total: 100 },
-  'C': { available: 28, occupied: 60, reserved: 12, total: 100 },
-};
-
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { slots } = useData();
   const [selectedLocation, setSelectedLocation] = useState('A');
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
-  const currentData = locationData[selectedLocation];
-  const occupiedPercentage = (currentData.occupied / currentData.total) * 100;
-  const reservedPercentage = (currentData.reserved / currentData.total) * 100;
-  const availablePercentage = (currentData.available / currentData.total) * 100;
-  const totalOccupancyPercentage = ((currentData.occupied + currentData.reserved) / currentData.total) * 100;
+  // Calculate stats from global slots
+  const calculateStats = (locationSlots) => {
+    const total = locationSlots.length;
+    const occupied = locationSlots.filter(s => s.status === 'occupied').length;
+    const reserved = locationSlots.filter(s => s.status === 'reserved').length;
+    const available = locationSlots.filter(s => s.status === 'available').length;
+    return { total, occupied, reserved, available };
+  };
 
+  const stats = calculateStats(slots[selectedLocation] || []);
+  const occupiedPercentage = (stats.occupied / stats.total) * 100;
+  const reservedPercentage = (stats.reserved / stats.total) * 100;
+  const availablePercentage = (stats.available / stats.total) * 100;
+  const totalOccupancyPercentage = ((stats.occupied + stats.reserved) / stats.total) * 100;
 
   const data = [
-    { name: 'Occupied', value: currentData.occupied, color: '#0c4a6e' }, // brand-900
-    { name: 'Reserved', value: currentData.reserved, color: '#38bdf8' }, // brand-400
-    { name: 'Available', value: currentData.available, color: '#f1f5f9' }, // slate-100
+    { name: 'Occupied', value: stats.occupied, color: '#0c4a6e' }, // brand-900
+    { name: 'Reserved', value: stats.reserved, color: '#38bdf8' }, // brand-400
+    { name: 'Available', value: stats.available, color: '#f1f5f9' }, // slate-100
   ];
 
   return (

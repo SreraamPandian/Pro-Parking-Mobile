@@ -1,83 +1,30 @@
 import React, { useState } from 'react';
+import { useData } from '../../context/DataContext';
 import { Search, Clock, Car, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
 
-// Generate location-specific slot data
-const generateSlotsByLocation = (location) => {
-  const baseSlots = [];
-  const statuses = ['occupied', 'reserved', 'available'];
-  const plates = ['ABC-1234', 'XYZ-9876', 'LMN-4567', 'PQR-1122', 'STU-9988', 'JKL-5544', 'MNO-7788', 'DEF-3344'];
-
-  // Different distributions for each location
-  const distributions = {
-    'A': { occupied: 24, reserved: 10, available: 16 },
-    'B': { occupied: 28, reserved: 7, available: 15 },
-    'C': { occupied: 20, reserved: 12, available: 18 }
-  };
-
-  const dist = distributions[location];
-  let slotIndex = 1;
-
-  // Add occupied slots
-  for (let i = 0; i < dist.occupied; i++) {
-    baseSlots.push({
-      id: slotIndex,
-      slotNumber: `${location}-${String(slotIndex).padStart(2, '0')}`,
-      plate: plates[i % plates.length],
-      entry: `${8 + (i % 4)}:${(i % 6) * 10} AM`,
-      duration: `${Math.floor(i / 10)}h ${(i % 6) * 10}m`,
-      status: 'occupied'
-    });
-    slotIndex++;
-  }
-
-  // Add reserved slots
-  for (let i = 0; i < dist.reserved; i++) {
-    baseSlots.push({
-      id: slotIndex,
-      slotNumber: `${location}-${String(slotIndex).padStart(2, '0')}`,
-      plate: plates[i % plates.length],
-      entry: `${9 + (i % 3)}:${(i % 4) * 15} AM`,
-      duration: `${Math.floor(i / 8)}h ${(i % 4) * 15}m`,
-      status: 'reserved'
-    });
-    slotIndex++;
-  }
-
-  // Add available slots
-  for (let i = 0; i < dist.available; i++) {
-    baseSlots.push({
-      id: slotIndex,
-      slotNumber: `${location}-${String(slotIndex).padStart(2, '0')}`,
-      plate: null,
-      entry: null,
-      duration: null,
-      status: 'available'
-    });
-    slotIndex++;
-  }
-
-  return baseSlots;
-};
-
+// Generate location-specific slot data removed - in DataContext
 export default function AdminLiveView() {
+  const { slots: globalSlots } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedLocation, setSelectedLocation] = useState('A');
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const itemsPerPage = 10;
 
-  // Get slots for selected location
-  const slots = generateSlotsByLocation(selectedLocation);
+  // Get slots for selected location from global state
+  const slots = globalSlots[selectedLocation] || [];
 
-  // Location stats
-  const locationStats = {
-    'A': { total: 100, available: 42, reserved: 10, occupied: 48 },
-    'B': { total: 100, available: 35, reserved: 10, occupied: 55 },
-    'C': { total: 100, available: 28, reserved: 12, occupied: 60 }
+  // Calculate stats dynamically from current state
+  const calculateStats = (locationSlots) => {
+    const total = locationSlots.length;
+    const occupied = locationSlots.filter(s => s.status === 'occupied').length;
+    const reserved = locationSlots.filter(s => s.status === 'reserved').length;
+    const available = locationSlots.filter(s => s.status === 'available').length;
+    return { total, occupied, reserved, available };
   };
 
-  const stats = locationStats[selectedLocation];
+  const stats = calculateStats(slots);
 
   const filteredSlots = slots.filter(slot =>
     slot.slotNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||

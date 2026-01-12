@@ -4,13 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 
-const initialVehicles = [
-  { id: 1, make: 'Tesla', model: 'Model 3', plate: 'ABC-1234', color: 'White', status: 'Verified' },
-  { id: 2, make: 'Toyota', model: 'Camry', plate: 'XYZ-9876', color: 'Silver', status: 'Verified' },
-];
+import { useData } from '../../context/DataContext';
+
+// Mock data removed - now in DataContext
 
 export default function StaffVehicles() {
-  const [vehicles, setVehicles] = useState(initialVehicles);
+  const { vehicles, setVehicles } = useData();
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentVehicle, setCurrentVehicle] = useState({ id: '', make: '', model: '', plate: '', color: '' });

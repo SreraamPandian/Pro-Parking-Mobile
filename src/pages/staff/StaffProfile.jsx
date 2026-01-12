@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useData } from '../../context/DataContext';
 import { User, LogOut, History, ChevronRight, Mail, Phone, Shield, Camera, Lock, CheckCircle2, X, ArrowRight } from 'lucide-react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,34 +9,35 @@ import { Button } from '../../components/ui/Button';
 export default function StaffProfile() {
   const navigate = useNavigate();
   const { type } = useOutletContext();
+  const { user, setUser, logout } = useData(); // Use global user state
   const [showDetails, setShowDetails] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Portal-specific profile data
-  const isStaff = type === 'staff';
-  const profileData = isStaff
-    ? {
-      name: 'Aiyana Redfeather',
-      email: 'sarah.mitchell@company.com',
-      image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQF2yaox2cALIq_yyd-9qEyovEsficJr7X9QQ&s'
-    }
-    : {
-      name: 'Aiyana Redfeather',
-      email: 'aiyanaredfeather@company.com',
-      image: 'https://static.vecteezy.com/system/resources/thumbnails/058/270/883/small/confident-young-man-posing-with-crossed-arms-in-casual-denim-shirt-png.png'
-    };
+  // Initialize local edit state from global user
+  // We use useEffect to sync if global user changes (e.g. initial load)
+  // But for inputs we might want local state that commits on blur/save? 
+  // The current code uses local state 'name', 'email', 'mobile' and commits them via setIsEditing...
+  // I will wire these directly to update global context or keep local and update global on save.
+  // Current implementation: has local state initialized from constants.
+  // I will initialize local state from `user`.
 
-  // New State for Editable Details
-  const [name, setName] = useState(profileData.name);
-  const [email, setEmail] = useState(profileData.email);
-  const [mobile, setMobile] = useState('+1 (555) 123-4567');
-  const [profileImage, setProfileImage] = useState(profileData.image);
+  // Portal-specific profile data (only used if context is empty/reset? No, context has priority)
+  // Actually, let's just use the context 'user' as the source of truth.
+
+  const [name, setName] = useState(user.name);
+  const [email, setEmail] = useState(user.email);
+  const [mobile, setMobile] = useState(user.mobile);
+  // Images handled by context user.image
+
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
 
+  // Sync state when entering (if needed) but useState initial value covers it if component remounts.
+  // If we navigation back and forth, component remounts.
+
   // Mobile Verification State
   const [showMobileModal, setShowMobileModal] = useState(false);
-  const [mobileStep, setMobileStep] = useState('verify-email'); // verify-email, verify-new, success
+  const [mobileStep, setMobileStep] = useState('verify-email');
   const [emailOtp, setEmailOtp] = useState('');
   const [newMobile, setNewMobile] = useState('');
   const [mobileOtp, setMobileOtp] = useState('');
@@ -46,13 +48,14 @@ export default function StaffProfile() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfileImage(reader.result);
+        setUser({ ...user, image: reader.result });
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleMobileUpdate = () => {
+    setUser({ ...user, mobile: newMobile });
     setMobile(newMobile);
     setMobileStep('success');
     setTimeout(() => {
@@ -62,6 +65,22 @@ export default function StaffProfile() {
       setEmailOtp('');
       setMobileOtp('');
     }, 2000);
+  };
+
+  // Update global state when name/email editing finishes
+  const saveName = () => {
+    setIsEditingName(false);
+    setUser({ ...user, name: name });
+  };
+
+  const saveEmail = () => {
+    setIsEditingEmail(false);
+    setUser({ ...user, email: email });
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   // Filtered menu items as requested
@@ -77,7 +96,7 @@ export default function StaffProfile() {
 
       <div className="flex items-center gap-4">
         <div className="relative">
-          <img src={profileImage} alt="Profile" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg bg-white" />
+          <img src={user.image} alt="Profile" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg bg-white" />
           <button
             onClick={() => fileInputRef.current?.click()}
             className="absolute bottom-0 right-0 w-8 h-8 bg-brand-900 rounded-full flex items-center justify-center shadow-lg hover:bg-brand-950 transition-colors"
@@ -93,8 +112,8 @@ export default function StaffProfile() {
           />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-gray-900">{name}</h2>
-          <p className="text-gray-500">{email}</p>
+          <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
+          <p className="text-gray-500">{user.email}</p>
         </div>
       </div>
 
@@ -133,17 +152,20 @@ export default function StaffProfile() {
                           type="text"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          onBlur={() => setIsEditingName(false)}
+                          onBlur={saveName}
                           className="w-full bg-gray-50 border border-gray-100 rounded-lg px-2 py-1 mt-1 font-medium text-gray-900 outline-none focus:border-brand-500"
                           autoFocus
                         />
                       ) : (
-                        <p className="font-medium text-gray-900">{name}</p>
+                        <p className="font-medium text-gray-900">{user.name}</p>
                       )}
                     </div>
                   </div>
                   <button
-                    onClick={() => setIsEditingName(!isEditingName)}
+                    onClick={() => {
+                      if (isEditingName) saveName();
+                      else setIsEditingName(true);
+                    }}
                     className="p-2 text-brand-600 font-bold text-xs uppercase tracking-widest hover:bg-brand-50 rounded-lg transition-colors"
                   >
                     {isEditingName ? 'Save' : 'Edit'}
@@ -160,17 +182,20 @@ export default function StaffProfile() {
                           type="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          onBlur={() => setIsEditingEmail(false)}
+                          onBlur={saveEmail}
                           className="w-full bg-gray-50 border border-gray-100 rounded-lg px-2 py-1 mt-1 font-medium text-gray-900 outline-none focus:border-brand-500"
                           autoFocus
                         />
                       ) : (
-                        <p className="font-medium text-gray-900">{email}</p>
+                        <p className="font-medium text-gray-900">{user.email}</p>
                       )}
                     </div>
                   </div>
                   <button
-                    onClick={() => setIsEditingEmail(!isEditingEmail)}
+                    onClick={() => {
+                      if (isEditingEmail) saveEmail();
+                      else setIsEditingEmail(true);
+                    }}
                     className="p-2 text-brand-600 font-bold text-xs uppercase tracking-widest hover:bg-brand-50 rounded-lg transition-colors"
                   >
                     {isEditingEmail ? 'Save' : 'Edit'}
@@ -182,7 +207,7 @@ export default function StaffProfile() {
                     <Phone size={18} className="text-brand-500" />
                     <div>
                       <p className="text-xs text-gray-400 font-bold uppercase">Mobile Number</p>
-                      <p className="font-medium text-gray-900">{mobile}</p>
+                      <p className="font-medium text-gray-900">{user.mobile}</p>
                     </div>
                   </div>
                   <button
@@ -217,7 +242,7 @@ export default function StaffProfile() {
       </div>
 
       <button
-        onClick={() => navigate('/')}
+        onClick={handleLogout}
         className="w-full bg-red-50 text-red-600 font-semibold py-4 rounded-2xl flex items-center justify-center gap-2 hover:bg-red-100 transition-colors"
       >
         <LogOut size={20} />
