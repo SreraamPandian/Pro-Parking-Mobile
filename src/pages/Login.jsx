@@ -81,7 +81,7 @@ export default function Login() {
                 onClick={() => switchMode('admin')}
                 className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${mode === 'admin' ? 'bg-white text-brand-900 shadow-sm' : 'text-gray-500'}`}
               >
-                Dakota Whitecloud
+                Staff
               </button>
             </div>
           </div>
