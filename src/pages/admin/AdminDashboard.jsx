@@ -86,18 +86,18 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex items-baseline gap-2 mb-8">
-            <h2 className="text-7xl font-bold tracking-tighter">{currentData.available}</h2>
-            <span className="text-brand-400 text-2xl font-medium">/ {currentData.total}</span>
+            <h2 className="text-7xl font-bold tracking-tighter">{stats.available}</h2>
+            <span className="text-brand-400 text-2xl font-medium">/ {stats.total}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
               <p className="text-brand-200 text-[10px] uppercase tracking-wider font-bold mb-1">Occupied</p>
-              <p className="text-2xl font-bold">{currentData.occupied}</p>
+              <p className="text-2xl font-bold">{stats.occupied}</p>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
               <p className="text-brand-200 text-[10px] uppercase tracking-wider font-bold mb-1">Reserved</p>
-              <p className="text-2xl font-bold">{currentData.reserved}</p>
+              <p className="text-2xl font-bold">{stats.reserved}</p>
             </div>
           </div>
         </div>
